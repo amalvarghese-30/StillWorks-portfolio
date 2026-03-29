@@ -52,11 +52,10 @@ export async function fetchCategories(): Promise<string[]> {
 // Updated getImageUrl function that handles both image and cover_image
 export function getImageUrl(image?: string, cover?: string): string {
   const img = cover || image;
-
-  if (!img) return "";
+  if (!img) return "/placeholder.svg";
   if (img.startsWith("http")) return img;
   if (API_BASE_URL) return `${API_BASE_URL}/uploads/${img}`;
-  return img;
+  return "/placeholder.svg";
 }
 
 // For section images that might be URLs or filenames

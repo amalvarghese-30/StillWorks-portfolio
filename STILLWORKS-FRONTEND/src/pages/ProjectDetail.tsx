@@ -15,21 +15,6 @@ import ScrollProgress from "@/components/ScrollProgress";
 const HeroSection = ({ data }: { data: Section["data"] }) => {
   const heroImage = data.image ? resolveImageUrl(data.image) : null;
 
-  const projectSchema = project ? {
-    "@context": "https://schema.org",
-    "@type": "CreativeWork",
-    name: project.title,
-    description: project.description,
-    creator: {
-      "@type": "Organization",
-      name: "Stillworks",
-    },
-    datePublished: project.year,
-    image: coverImage,
-    keywords: project.category,
-  } : null;
-
-
   return (
     <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden">
       {heroImage && (
@@ -38,6 +23,9 @@ const HeroSection = ({ data }: { data: Section["data"] }) => {
             src={heroImage}
             alt={data.title || "Hero"}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "/placeholder.svg";
+            }}
           />
           <div className="absolute inset-0 bg-black/40" />
         </div>
@@ -84,7 +72,7 @@ const GallerySection = ({ data }: { data: Section["data"] }) => {
                   transition={{ duration: 0.4 }}
                   className="w-full h-[60vh] object-cover rounded-xl"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = "https:///placeholder.svg/1200x800?text=Image+Not+Found";
+                    (e.target as HTMLImageElement).src = "/placeholder.svg";
                   }}
                 />
               </AnimatePresence>
@@ -138,7 +126,7 @@ const GallerySection = ({ data }: { data: Section["data"] }) => {
                 alt=""
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = "https:///placeholder.svg/800x600?text=Image+Not+Found";
+                  (e.target as HTMLImageElement).src = "/placeholder.svg";
                 }}
               />
             </motion.div>
@@ -167,6 +155,9 @@ const TestimonialSection = ({ data }: { data: Section["data"] }) => {
                 src={resolveImageUrl(data.clientImage)}
                 alt={data.clientName || "Client"}
                 className="w-12 h-12 rounded-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/placeholder.svg";
+                }}
               />
             )}
             <div>
@@ -183,9 +174,6 @@ const TestimonialSection = ({ data }: { data: Section["data"] }) => {
     </section>
   );
 };
-
-// Other section components (Text, Video, Stats, Timeline, Quote, CTA, TwoColumn, TechStack) remain the same
-// but they should use resolveImageUrl for any image fields
 
 // Main ProjectDetail component
 const ProjectDetail = () => {
@@ -291,7 +279,7 @@ const ProjectDetail = () => {
         {project.sections && project.sections.length > 0 ? (
           <>
             {project.sections.map((section, index) => (
-              <>
+              <div key={section.id}>
                 {renderSection(section)}
 
                 {/* Insert description AFTER hero */}
@@ -304,7 +292,7 @@ const ProjectDetail = () => {
                     </div>
                   </section>
                 )}
-              </>
+              </div>
             ))}
           </>
         ) : (
@@ -324,7 +312,7 @@ const ProjectDetail = () => {
                     alt={project.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = "https:///placeholder.svg/1920x1080?text=No+Image";
+                      (e.target as HTMLImageElement).src = "/placeholder.svg";
                     }}
                   />
                   {project.featured && (
@@ -408,9 +396,7 @@ const ProjectDetail = () => {
   );
 };
 
-// Add missing section component imports at the top (they should be defined before use)
-// These are the basic section components that need to be added:
-
+// Section components
 const TextSection = ({ data }: { data: Section["data"] }) => {
   return (
     <section className="py-16 md:py-24">
