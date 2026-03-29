@@ -139,18 +139,18 @@ const AdminSettings = () => {
           <div>
             <label className="block text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1.5 font-body">Backend URL</label>
             <input
-              value={import.meta.env.VITE_API_URL || "Not configured (demo mode)"}
+              value={import.meta.env.VITE_API_BASE_URL || "Not configured (demo mode)"}
               readOnly
               placeholder="Backend URL"
               className="w-full bg-transparent border border-border rounded-lg px-4 py-2.5 text-sm text-muted-foreground font-body"
             />
             <p className="text-xs text-muted-foreground font-body mt-2">
-              Set VITE_API_URL environment variable to connect to your Flask backend.
+              Set VITE_API_BASE_URL environment variable to connect to your Flask backend.
             </p>
-            {!import.meta.env.VITE_API_URL && (
+            {!import.meta.env.VITE_API_BASE_URL && (
               <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                 <p className="text-xs text-yellow-600 dark:text-yellow-400 font-body">
-                  ⚠️ Demo mode active. Set VITE_API_URL to your backend URL (e.g., http://localhost:5000)
+                  ⚠️ Demo mode active. Set VITE_API_BASE_URL to your backend URL (e.g., http://localhost:5000)
                 </p>
               </div>
             )}

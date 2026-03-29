@@ -17,7 +17,7 @@ interface Testimonial {
     order: number;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL || "";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 const TOKEN = () => localStorage.getItem("stillworks-admin-token");
 
 const TestimonialsManager = () => {
