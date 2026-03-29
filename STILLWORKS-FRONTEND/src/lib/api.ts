@@ -2,7 +2,9 @@
 import { Project, Category, fallbackProjects, defaultCategories } from "@/lib/projects";
 
 // Configure your Flask API base URL here
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ??
+  "https://stillworks-backend.onrender.com";
 
 async function apiFetch<T>(path: string): Promise<T | null> {
   if (!API_BASE_URL) return null;
