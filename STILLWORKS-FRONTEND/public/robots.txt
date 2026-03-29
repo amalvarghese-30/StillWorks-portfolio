@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Sitemap: https://stillworks.in/sitemap.xml
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Googlebot
+Allow: /
+Allow: /project/
