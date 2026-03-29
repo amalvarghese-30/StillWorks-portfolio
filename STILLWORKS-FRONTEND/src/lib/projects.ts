@@ -356,17 +356,7 @@ export const fallbackProjects: Project[] = [
     featured: false,
     sections: []
   },
-  {
-    id: "5",
-    title: "Ecliptic Landing Suite",
-    category: "Landing Pages",
-    description: "High-converting landing page system with dynamic content personalization and integrated analytics.",
-    cover_image: "https://images.unsplash.com/photo-1634017839464-5c339ebe3579?w=800&q=80",
-    year: "2023",
-    client: "Ecliptic Labs",
-    featured: true,
-    sections: []
-  },
+ 
   {
     id: "6",
     title: "Apex Commerce Platform",
