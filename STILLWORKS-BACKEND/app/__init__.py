@@ -41,7 +41,7 @@ def create_app():
             "http://localhost:8080",
             "https://stillworks.in",
             "https://www.stillworks.in",
-            "https://still-works-portfolio.vercel.app"
+            "still-works-portfolio-6lqq2yxuj.vercel.app"
         ]}},
         supports_credentials=True
     )

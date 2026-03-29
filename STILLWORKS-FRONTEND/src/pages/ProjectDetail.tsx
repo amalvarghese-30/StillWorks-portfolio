@@ -84,7 +84,7 @@ const GallerySection = ({ data }: { data: Section["data"] }) => {
                   transition={{ duration: 0.4 }}
                   className="w-full h-[60vh] object-cover rounded-xl"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = "https://via.placeholder.com/1200x800?text=Image+Not+Found";
+                    (e.target as HTMLImageElement).src = "https:///placeholder.svg/1200x800?text=Image+Not+Found";
                   }}
                 />
               </AnimatePresence>
@@ -138,7 +138,7 @@ const GallerySection = ({ data }: { data: Section["data"] }) => {
                 alt=""
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = "https://via.placeholder.com/800x600?text=Image+Not+Found";
+                  (e.target as HTMLImageElement).src = "https:///placeholder.svg/800x600?text=Image+Not+Found";
                 }}
               />
             </motion.div>
@@ -324,7 +324,7 @@ const ProjectDetail = () => {
                     alt={project.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = "https://via.placeholder.com/1920x1080?text=No+Image";
+                      (e.target as HTMLImageElement).src = "https:///placeholder.svg/1920x1080?text=No+Image";
                     }}
                   />
                   {project.featured && (
