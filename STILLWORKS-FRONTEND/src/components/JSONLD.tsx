@@ -1,3 +1,4 @@
+// STILLWORKS-FRONTEND/src/components/JSONLD.tsx
 import { Helmet } from "react-helmet-async";
 
 interface JSONLDProps {
@@ -25,8 +26,8 @@ export const OrganizationSchema = () => (
         type="Organization"
         data={{
             name: "Stillworks",
-            url: "https://stillworks.com",
-            logo: "https://stillworks.com/logo.png",
+            url: "https://stillworks.in",
+            logo: "https://stillworks.in/logo.png",
             sameAs: [
                 "https://twitter.com/stillworks",
                 "https://linkedin.com/company/stillworks",
@@ -37,13 +38,13 @@ export const OrganizationSchema = () => (
                 "@type": "PostalAddress",
                 addressLocality: "Your City",
                 addressRegion: "Your State",
-                addressCountry: "US",
+                addressCountry: "IN",
             },
             contactPoint: {
                 "@type": "ContactPoint",
-                telephone: "+1-555-123-4567",
+                telephone: "+91-9987231107",
                 contactType: "customer service",
-                email: "hello@stillworks.com",
+                email: "info@stillworks.in",
             },
         }}
     />

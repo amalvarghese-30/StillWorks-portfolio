@@ -1,3 +1,4 @@
+# STILLWORKS-BACKEND/app/routes/contact.py
 from flask import Blueprint, request, jsonify
 import resend
 import os
@@ -5,6 +6,7 @@ import os
 contact_bp = Blueprint("contact", __name__)
 
 resend.api_key = os.getenv("RESEND_API_KEY")
+CONTACT_RECEIVER_EMAIL = os.getenv("CONTACT_RECEIVER_EMAIL", "info@stillworks.in")
 
 
 @contact_bp.route("", methods=["POST"])
@@ -22,8 +24,9 @@ def send_contact_email():
     try:
         resend.Emails.send({
             "from": "Stillworks <info@stillworks.in>",
-            "to": [os.getenv("CONTACT_RECEIVER_EMAIL")],
-            "subject": f"New Contact Form Submission from {name}",
+            "to": [CONTACT_RECEIVER_EMAIL],
+            "reply_to": email,
+            "subject": f"New message from {name}",
             "html": f"""
                 <strong>Name:</strong> {name}<br/>
                 <strong>Email:</strong> {email}<br/><br/>

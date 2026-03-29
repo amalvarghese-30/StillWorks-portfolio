@@ -1,12 +1,13 @@
+// STILLWORKS-FRONTEND/src/lib/api.ts
 import { Project, Category, fallbackProjects, defaultCategories } from "@/lib/projects";
 
 // Configure your Flask API base URL here
-const API_BASE = import.meta.env.VITE_API_URL || "";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 async function apiFetch<T>(path: string): Promise<T | null> {
-  if (!API_BASE) return null;
+  if (!API_BASE_URL) return null;
   try {
-    const res = await fetch(`${API_BASE}${path}`);
+    const res = await fetch(`${API_BASE_URL}${path}`);
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -52,7 +53,7 @@ export function getImageUrl(image?: string, cover?: string): string {
 
   if (!img) return "";
   if (img.startsWith("http")) return img;
-  if (API_BASE) return `${API_BASE}/uploads/${img}`;
+  if (API_BASE_URL) return `${API_BASE_URL}/uploads/${img}`;
   return img;
 }
 
@@ -60,6 +61,6 @@ export function getImageUrl(image?: string, cover?: string): string {
 export function resolveImageUrl(img: string): string {
   if (!img) return "";
   if (img.startsWith("http")) return img;
-  if (API_BASE) return `${API_BASE}/uploads/${img}`;
+  if (API_BASE_URL) return `${API_BASE_URL}/uploads/${img}`;
   return img;
 }

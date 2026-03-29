@@ -1,3 +1,4 @@
+// STILLWORKS-FRONTEND/src/contexts/AuthContext.tsx
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 interface AuthContextType {
@@ -10,7 +11,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const API_BASE = import.meta.env.VITE_API_URL || "";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() =>
@@ -21,7 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAuthenticated = !!token;
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    if (!API_BASE) {
+    if (!API_BASE_URL) {
       // Demo mode: accept demo/demo
       if (email === "admin@stillworks.com" && password === "admin123") {
         const demoToken = "demo-token-" + Date.now();
@@ -33,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/auth/login`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

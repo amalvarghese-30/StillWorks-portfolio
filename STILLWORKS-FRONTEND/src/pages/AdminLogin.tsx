@@ -1,8 +1,11 @@
+// STILLWORKS-FRONTEND/src/pages/AdminLogin.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");

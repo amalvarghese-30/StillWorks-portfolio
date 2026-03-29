@@ -1,13 +1,16 @@
+// STILLWORKS-FRONTEND/src/components/Contact.tsx
 import { useState, useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { ArrowUpRight, Send, Loader2, CheckCircle, Phone } from "lucide-react";
 import { toast } from "./ui/use-toast";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
 const Contact = () => {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
 
-  const [form, setForm] = useState({
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
     message: "",
@@ -17,41 +20,34 @@ const Contact = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setStatus("sending");
 
     try {
-      const res = await fetch("http://localhost:5000/api/contact", {
+      const response = await fetch(`${API_BASE_URL}/api/contact`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify(formData),
       });
 
-      if (!res.ok) throw new Error();
+      if (!response.ok) throw new Error("Failed to send message");
 
       setStatus("sent");
-
       toast({
         title: "Message sent successfully!",
       });
-
-      setForm({
-        name: "",
-        email: "",
-        message: "",
-      });
-
-    } catch {
+      setFormData({ name: "", email: "", message: "" });
+    } catch (err) {
+      console.error(err);
       setStatus("idle");
-
       toast({
         title: "Failed to send message",
         variant: "destructive",
       });
     }
   };
+
   return (
     <section
       id="contact"
@@ -164,9 +160,9 @@ const Contact = () => {
                 <input
                   type={type}
                   required
-                  value={form[key as keyof typeof form]}
+                  value={formData[key as keyof typeof formData]}
                   onChange={(e) =>
-                    setForm({ ...form, [key]: e.target.value })
+                    setFormData({ ...formData, [key]: e.target.value })
                   }
                   className="w-full bg-transparent border-b-2 border-border pb-3 text-foreground font-body focus:outline-none focus:border-foreground transition-colors duration-300"
                 />
@@ -181,9 +177,9 @@ const Contact = () => {
               <textarea
                 required
                 rows={4}
-                value={form.message}
+                value={formData.message}
                 onChange={(e) =>
-                  setForm({ ...form, message: e.target.value })
+                  setFormData({ ...formData, message: e.target.value })
                 }
                 className="w-full bg-transparent border-b-2 border-border pb-3 text-foreground font-body focus:outline-none focus:border-foreground transition-colors duration-300 resize-none"
               />

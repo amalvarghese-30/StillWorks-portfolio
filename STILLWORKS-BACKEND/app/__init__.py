@@ -1,3 +1,4 @@
+# STILLWORKS-BACKEND/app/__init__.py
 from flask import Flask, send_from_directory
 from flask_pymongo import PyMongo
 from flask_cors import CORS
@@ -33,14 +34,17 @@ def create_app():
         return send_from_directory(uploads_path, filename)
 
     # Enable CORS with stricter settings for production
-    allowed_origins = os.getenv("CORS_ORIGINS", "").split(",") if os.getenv("CORS_ORIGINS") else [
-        "http://localhost:8080",
-        "http://localhost:5173",
-        "http://localhost:5000",
-        "https://stillworks.com",
-        "https://www.stillworks.com"
-    ]
-    CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
+    CORS(
+        app,
+        resources={r"/api/*": {"origins": [
+            "http://localhost:5173",
+            "http://localhost:8080",
+            "https://stillworks.in",
+            "https://www.stillworks.in",
+            "https://still-works-portfolio.vercel.app"
+        ]}},
+        supports_credentials=True
+    )
 
     # Initialize extensions
     mongo.init_app(app)
