@@ -6,6 +6,8 @@ import { monitorPerformance, runWhenIdle } from "@/lib/performance";
 // Performance monitoring (start early)
 const cleanupPerformance = monitorPerformance();
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+
 // Check if running in production
 const isProduction = import.meta.env.PROD;
 
@@ -81,7 +83,7 @@ if (isProduction) {
     window.addEventListener('error', (event) => {
         // Send to analytics endpoint
         if (navigator.sendBeacon) {
-            navigator.sendBeacon('/api/analytics/error', JSON.stringify({
+            navigator.sendBeacon(`${API_BASE}/api/analytics/error`, JSON.stringify({
                 message: event.message,
                 filename: event.filename,
                 line: event.lineno,
@@ -96,7 +98,7 @@ if (isProduction) {
     window.addEventListener('unhandledrejection', (event) => {
         // Send to analytics endpoint
         if (navigator.sendBeacon) {
-            navigator.sendBeacon('/api/analytics/error', JSON.stringify({
+            navigator.sendBeacon(`${API_BASE}/api/analytics/error`, JSON.stringify({
                 type: 'unhandledrejection',
                 reason: String(event.reason),
                 timestamp: Date.now(),

@@ -15,7 +15,7 @@ function authHeaders(isJson = true): Record<string, string> {
 }
 
 async function apiFetch(url: string, init?: RequestInit): Promise<Response> {
-  const res = await apiFetch(url, init);
+  const res = await window.fetch(url, init);
   if (res.status === 401) {
     localStorage.removeItem("stillworks-admin-token");
     window.location.href = "/admin/login";

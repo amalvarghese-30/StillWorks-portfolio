@@ -1,5 +1,7 @@
 // Performance monitoring utility with web worker support
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+
 export interface PerformanceMetrics {
     FCP: number;  // First Contentful Paint
     LCP: number;  // Largest Contentful Paint
@@ -16,9 +18,9 @@ export function sendMetricsToAnalytics(metrics: Partial<PerformanceMetrics>): vo
 
     // Send to your analytics endpoint
     if (navigator.sendBeacon) {
-        navigator.sendBeacon('/api/analytics/performance', JSON.stringify(metrics));
+        navigator.sendBeacon(`${API_BASE}/api/analytics/performance`, JSON.stringify(metrics));
     } else {
-        fetch('/api/analytics/performance', {
+        fetch(`${API_BASE}/api/analytics/performance`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(metrics),
