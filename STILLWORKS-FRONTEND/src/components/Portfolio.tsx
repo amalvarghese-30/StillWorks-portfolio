@@ -1,9 +1,59 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { fetchProjects, fetchCategories, getImageUrl } from "@/lib/api";
 import type { Project } from "@/lib/projects";
+
+// Optimized image component with lazy loading and blur placeholder
+const OptimizedImage = ({
+  src,
+  alt,
+  className
+}: {
+  src: string;
+  alt: string;
+  className: string;
+}) => {
+  const [loaded, setLoaded] = useState(false);
+  const [imgSrc, setImgSrc] = useState("/placeholder.svg");
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    setLoaded(false);
+    const img = new Image();
+    img.src = src;
+    img.onload = () => {
+      setImgSrc(src);
+      setLoaded(true);
+    };
+    img.onerror = () => {
+      setImgSrc("/placeholder.svg");
+      setLoaded(true);
+    };
+  }, [src]);
+
+  return (
+    <div className="relative w-full h-full">
+      {!loaded && (
+        <div className="absolute inset-0 bg-muted animate-pulse" />
+      )}
+      <img
+        ref={imgRef}
+        src={imgSrc}
+        alt={alt}
+        width="800"
+        height="600"
+        loading="lazy"
+        decoding="async"
+        className={`${className} ${loaded ? "opacity-100" : "opacity-0"} transition-opacity duration-300`}
+        onError={(e) => {
+          (e.target as HTMLImageElement).src = "/placeholder.svg";
+        }}
+      />
+    </div>
+  );
+};
 
 const Portfolio = () => {
   const [activeCategory, setActiveCategory] = useState("All");
@@ -14,19 +64,35 @@ const Portfolio = () => {
   const inView = useInView(ref, { once: true, margin: "-100px" });
   const navigate = useNavigate();
 
-  // Load categories on mount
-  useEffect(() => {
-    fetchCategories().then(setCategories);
+  // Memoize fetch functions
+  const loadCategories = useCallback(async () => {
+    const cats = await fetchCategories();
+    setCategories(cats);
   }, []);
 
-  // Load projects when category changes
-  useEffect(() => {
+  const loadProjects = useCallback(async () => {
     setLoading(true);
-    fetchProjects(activeCategory).then((data) => {
-      setProjects(data);
-      setLoading(false);
-    });
+    const data = await fetchProjects(activeCategory === "All" ? undefined : activeCategory);
+    setProjects(data);
+    setLoading(false);
   }, [activeCategory]);
+
+  // Load categories immediately (they're small and needed for filters)
+  useEffect(() => {
+    loadCategories();
+  }, [loadCategories]);
+
+  // Delay portfolio loading to prioritize hero content - only ONE useEffect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadProjects();
+    }, 500); // Load portfolio after 500ms
+
+    return () => clearTimeout(timer);
+  }, [loadProjects]); // Only depends on loadProjects
+
+  // Memoize project list to prevent unnecessary re-renders
+  const projectList = useMemo(() => projects, [projects]);
 
   return (
     <section id="work" ref={ref} className="py-24 md:py-32">
@@ -46,7 +112,7 @@ const Portfolio = () => {
           </h2>
         </motion.div>
 
-        {/* Category filters */}
+        {/* Category filters with reduced re-renders */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -74,11 +140,10 @@ const Portfolio = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.4 }}
+            transition={{ duration: 0.3 }}
             className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8"
           >
             {loading ? (
-              // Loading skeleton
               Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="animate-pulse">
                   <div className="aspect-[4/3] rounded-lg bg-muted mb-4" />
@@ -87,24 +152,20 @@ const Portfolio = () => {
                 </div>
               ))
             ) : (
-              projects.map((project, i) => (
+              projectList.map((project, i) => (
                 <motion.article
                   key={project.id}
                   initial={{ opacity: 0, y: 40 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.3) }}
                   onClick={() => navigate(`/project/${project.id}`)}
                   className="group cursor-pointer"
                 >
                   <div className="relative overflow-hidden rounded-lg aspect-[4/3] bg-muted mb-4">
-                    <motion.img
+                    <OptimizedImage
                       src={getImageUrl(project.image, project.cover_image)}
                       alt={project.title}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      loading="lazy"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/placeholder.svg";
-                      }}
                     />
                     <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/10 transition-colors duration-500" />
                     <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">

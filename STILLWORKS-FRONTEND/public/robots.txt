@@ -1,9 +1,9 @@
+# https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
-Sitemap: https://stillworks.in/sitemap.xml
-Disallow: /admin/
-Disallow: /api/
 
-User-agent: Googlebot
-Allow: /
-Allow: /project/
+# Sitemap
+Sitemap: https://stillworks.in/sitemap.xml
+
+# Crawl delay (optional - helps with server load)
+Crawl-delay: 1

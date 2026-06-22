@@ -38,6 +38,9 @@ const Contact = () => {
         title: "Message sent successfully!",
       });
       setFormData({ name: "", email: "", message: "" });
+
+      // Reset status after 3 seconds
+      setTimeout(() => setStatus("idle"), 3000);
     } catch (err) {
       console.error(err);
       setStatus("idle");
@@ -140,7 +143,7 @@ const Contact = () => {
             </motion.div>
           </div>
 
-          {/* Right - Form */}
+          {/* Right - Form with proper labels */}
           <motion.form
             initial={{ opacity: 0, y: 30 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -148,40 +151,48 @@ const Contact = () => {
             onSubmit={handleSubmit}
             className="space-y-6"
           >
-            {[
-              { key: "name", label: "Name", type: "text" },
-              { key: "email", label: "Email", type: "email" },
-            ].map(({ key, label, type }) => (
-              <div key={key} className="group">
-                <label className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 font-body group-focus-within:text-foreground transition-colors">
-                  {label}
-                </label>
-
-                <input
-                  type={type}
-                  required
-                  value={formData[key as keyof typeof formData]}
-                  onChange={(e) =>
-                    setFormData({ ...formData, [key]: e.target.value })
-                  }
-                  className="w-full bg-transparent border-b-2 border-border pb-3 text-foreground font-body focus:outline-none focus:border-foreground transition-colors duration-300"
-                />
-              </div>
-            ))}
+            <div className="group">
+              <label htmlFor="contact-name" className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 font-body group-focus-within:text-foreground transition-colors">
+                Name
+              </label>
+              <input
+                id="contact-name"
+                type="text"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full bg-transparent border-b-2 border-border pb-3 text-foreground font-body focus:outline-none focus:border-foreground transition-colors duration-300"
+                aria-label="Your name"
+              />
+            </div>
 
             <div className="group">
-              <label className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 font-body group-focus-within:text-foreground transition-colors">
+              <label htmlFor="contact-email" className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 font-body group-focus-within:text-foreground transition-colors">
+                Email
+              </label>
+              <input
+                id="contact-email"
+                type="email"
+                required
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full bg-transparent border-b-2 border-border pb-3 text-foreground font-body focus:outline-none focus:border-foreground transition-colors duration-300"
+                aria-label="Your email address"
+              />
+            </div>
+
+            <div className="group">
+              <label htmlFor="contact-message" className="block text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 font-body group-focus-within:text-foreground transition-colors">
                 Message
               </label>
-
               <textarea
+                id="contact-message"
                 required
                 rows={4}
                 value={formData.message}
-                onChange={(e) =>
-                  setFormData({ ...formData, message: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 className="w-full bg-transparent border-b-2 border-border pb-3 text-foreground font-body focus:outline-none focus:border-foreground transition-colors duration-300 resize-none"
+                aria-label="Your message"
               />
             </div>
 
@@ -189,6 +200,7 @@ const Contact = () => {
               type="submit"
               disabled={status !== "idle"}
               className="flex items-center gap-3 bg-foreground text-background px-8 py-4 rounded-lg font-display font-semibold tracking-wide hover:opacity-90 transition-all duration-300 disabled:opacity-60"
+              aria-label="Send message"
             >
               {status === "idle" && (
                 <>

@@ -1,17 +1,21 @@
 # STILLWORKS-BACKEND/app/__init__.py
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, g, request
 from flask_pymongo import PyMongo
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 import os
+import time
+from flask_compress import Compress
+import cloudinary
 
 load_dotenv()
 
 mongo = PyMongo()
 jwt = JWTManager()
 bcrypt = Bcrypt()
+compress = Compress()
 
 
 def create_app():
@@ -28,10 +32,40 @@ def create_app():
         os.path.join(os.getcwd(), "uploads")
     )
 
+    # Cloudinary config
+    cloudinary.config(
+        cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+        api_key=os.getenv("CLOUDINARY_API_KEY"),
+        api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+        secure=True,
+    )
+
+    # Compression settings
+    app.config["COMPRESS_MIMETYPES"] = [
+        "text/html",
+        "text/css",
+        "text/xml",
+        "application/json",
+        "application/javascript",
+        "text/plain",
+        "image/svg+xml",
+        "font/woff2"
+    ]
+    app.config["COMPRESS_LEVEL"] = 6
+    app.config["COMPRESS_MIN_SIZE"] = 500
+
     @app.route("/uploads/<path:filename>")
     def serve_upload(filename):
         uploads_path = app.config["UPLOAD_FOLDER"]
-        return send_from_directory(uploads_path, filename)
+        response = send_from_directory(uploads_path, filename)
+        
+        # Set cache headers for images (1 year for immutable content)
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg')):
+            response.cache_control.max_age = 31536000  # 1 year
+            response.cache_control.public = True
+            response.cache_control.immutable = True
+            response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+        return response
 
     # Enable CORS with stricter settings for production
     CORS(
@@ -43,13 +77,15 @@ def create_app():
             "https://www.stillworks.in",
             "still-works-portfolio-6lqq2yxuj.vercel.app"
         ]}},
-        supports_credentials=True
+        supports_credentials=True,
+        vary=True
     )
 
     # Initialize extensions
     mongo.init_app(app)
     jwt.init_app(app)
     bcrypt.init_app(app)
+    compress.init_app(app)
 
     # Ensure uploads directory exists
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
@@ -74,9 +110,60 @@ def create_app():
     app.register_blueprint(testimonials_bp, url_prefix="/api/testimonials")
     app.register_blueprint(contact_bp, url_prefix="/api/contact")
 
+    # Add performance monitoring middleware
+    @app.before_request
+    def before_request():
+        g.start_time = time.time()
+
+    @app.after_request
+    def after_request(response):
+        # Add timing header
+        if hasattr(g, 'start_time'):
+            elapsed = (time.time() - g.start_time) * 1000
+            response.headers['X-Response-Time'] = f'{elapsed:.2f}ms'
+        
+        # Security Headers
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        
+        # Cache headers for API responses
+        if request.path.startswith('/api/'):
+            # Cache successful GET requests for 5 minutes
+            if request.method == 'GET' and response.status_code == 200:
+                response.cache_control.max_age = 300  # 5 minutes
+                response.cache_control.public = True
+                response.headers['Cache-Control'] = 'public, max-age=300'
+            else:
+                # Prevent caching for mutations
+                response.cache_control.no_cache = True
+                response.cache_control.no_store = True
+                response.cache_control.must_revalidate = True
+                response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        
+        # Enable Vary: Accept-Encoding for proxies
+        if 'Accept-Encoding' in request.headers:
+            response.vary.add('Accept-Encoding')
+        
+        return response
+
+    # Health check endpoint for monitoring
+    @app.route("/health")
+    def health_check():
+        import platform
+        import sys
+        return {
+            "status": "healthy",
+            "timestamp": time.time(),
+            "python_version": sys.version,
+            "platform": platform.platform(),
+            "mongodb_connected": mongo.db is not None
+        }, 200
+
     # Seed admin account
     with app.app_context():
         _seed_admin()
+        _create_indexes()
 
     return app
 
@@ -106,3 +193,38 @@ def _seed_admin():
         })
 
         print(f"[SEED] Admin created: {email}")
+
+
+def _create_indexes():
+    """Create database indexes for better query performance."""
+    try:
+        # Projects indexes
+        mongo.db.projects.create_index("slug", unique=True)
+        mongo.db.projects.create_index("category")
+        mongo.db.projects.create_index("category_id")
+        mongo.db.projects.create_index("featured")
+        mongo.db.projects.create_index("visible")
+        mongo.db.projects.create_index("order")
+        mongo.db.projects.create_index([("visible", 1), ("order", 1)])
+        mongo.db.projects.create_index([("category", 1), ("visible", 1), ("order", 1)])
+
+        # Categories indexes
+        mongo.db.categories.create_index("slug", unique=True)
+        mongo.db.categories.create_index("order")
+
+        # Testimonials indexes
+        mongo.db.testimonials.create_index("order")
+        mongo.db.testimonials.create_index("approved")
+        mongo.db.testimonials.create_index("visible")
+        mongo.db.testimonials.create_index([("approved", 1), ("visible", 1), ("order", 1)])
+
+        # Media uploads indexes (Cloudinary tracking)
+        mongo.db.media_uploads.create_index("public_id", unique=True)
+        mongo.db.media_uploads.create_index("created_at")
+
+        # Admins indexes
+        mongo.db.admins.create_index("email", unique=True)
+
+        print("[INFO] Database indexes created successfully")
+    except Exception as e:
+        print(f"[WARNING] Failed to create indexes: {e}")

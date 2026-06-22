@@ -5,9 +5,9 @@ from flask_jwt_extended import (
 )
 from app import mongo, bcrypt
 from datetime import timedelta
+from bson import ObjectId
 
 auth_bp = Blueprint("auth", __name__)
-
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
@@ -25,12 +25,15 @@ def login():
     if not admin or not bcrypt.check_password_hash(admin["password"], password):
         return jsonify(error="Invalid credentials"), 401
 
+    # Convert ObjectId to string for JWT identity
+    identity = str(admin["_id"])
+    
     access_token = create_access_token(
-        identity=str(admin["_id"]),
+        identity=identity,
         expires_delta=timedelta(hours=24)
     )
     refresh_token = create_refresh_token(
-        identity=str(admin["_id"]),
+        identity=identity,
         expires_delta=timedelta(days=30)
     )
 
@@ -54,7 +57,6 @@ def refresh():
 @auth_bp.route("/me", methods=["GET"])
 @jwt_required()
 def me():
-    from bson import ObjectId
     identity = get_jwt_identity()
     admin = mongo.db.admins.find_one({"_id": ObjectId(identity)})
     if not admin:

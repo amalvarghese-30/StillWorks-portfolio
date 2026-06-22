@@ -6,10 +6,16 @@ const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ??
   "https://stillworks-backend.onrender.com";
 
+const cacheConfig: RequestInit = {
+  headers: {
+    "Cache-Control": "max-age=300", // 5 minutes cache
+  },
+};
+
 async function apiFetch<T>(path: string): Promise<T | null> {
   if (!API_BASE_URL) return null;
   try {
-    const res = await fetch(`${API_BASE_URL}${path}`);
+    const res = await fetch(`${API_BASE_URL}${path}`, cacheConfig);
     if (!res.ok) return null;
     return await res.json();
   } catch {

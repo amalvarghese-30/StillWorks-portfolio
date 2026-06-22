@@ -72,9 +72,9 @@ const About = () => {
                   <p className="text-3xl md:text-4xl font-display font-bold text-foreground tracking-tight">
                     {stat.number}
                   </p>
-                  <p className="text-sm text-muted-foreground mt-1 font-body">
+                  <h3 className="text-sm text-muted-foreground mt-1 font-body">
                     {stat.label}
-                  </p>
+                  </h3>
                 </motion.div>
               ))}
             </div>

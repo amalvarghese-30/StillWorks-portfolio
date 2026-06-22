@@ -4,6 +4,20 @@
 
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+
+  <!-- DNS Prefetch for critical third-party domains -->
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  <link rel="preload" as="image" href="/logo-light.svg" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- Preload critical fonts -->
+  <link rel="preload" as="font" type="font/woff2"
+    href="https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2" crossorigin />
+  <link rel="preload" as="font" type="font/woff2"
+    href="https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU.woff2" crossorigin />
 
   <!-- SVG Favicon -->
   <link rel="icon" type="image/svg+xml" href="/logo.svg" />
@@ -21,32 +35,30 @@
 
   <meta name="author" content="Stillworks" />
 
-  <!-- Open Graph (WhatsApp / LinkedIn preview) -->
+  <!-- Open Graph -->
   <meta property="og:title" content="Stillworks — Automation Websites & Digital Systems Agency" />
-
   <meta property="og:description"
     content="We build automation-powered websites that increase conversions and reduce manual work." />
-
   <meta property="og:type" content="website" />
-
   <meta property="og:image" content="https://stillworks.in/og-image.png" />
-
   <meta property="og:url" content="https://stillworks.in" />
-
   <meta property="og:site_name" content="Stillworks" />
 
   <!-- Twitter Preview -->
   <meta name="twitter:card" content="summary_large_image" />
-
   <meta name="twitter:title" content="Stillworks — Automation Websites & Digital Systems Agency" />
-
   <meta name="twitter:description"
     content="We build automation-powered websites that increase conversions and reduce manual work." />
-
   <meta name="twitter:image" content="https://stillworks.in/og-image.png" />
 
   <!-- Canonical URL -->
   <link rel="canonical" href="https://stillworks.in" />
+
+  <!-- Robots meta tag -->
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+
+  <!-- Cache control for static assets -->
+  <meta http-equiv="Cache-Control" content="public, max-age=31536000, immutable" />
 
 </head>
 

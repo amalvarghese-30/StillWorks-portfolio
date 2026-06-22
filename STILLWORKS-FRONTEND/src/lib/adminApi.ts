@@ -26,6 +26,7 @@ export interface MediaFile {
   name: string;
   size: number;
   url: string;
+  public_id: string;
 }
 
 export async function fetchAdminStats(): Promise<AdminStats> {
@@ -153,9 +154,9 @@ export async function fetchMediaFiles(): Promise<MediaFile[]> {
   if (!API_BASE_URL) {
     // Demo mode: return some sample images
     return [
-      { name: "project-1.jpg", size: 245000, url: "/placeholder.svg" },
-      { name: "project-2.jpg", size: 189000, url: "/placeholder.svg" },
-      { name: "hero-bg.png", size: 512000, url: "/placeholder.svg" },
+      { name: "project-1.jpg", size: 245000, url: "/placeholder.svg", public_id: "demo/project-1" },
+      { name: "project-2.jpg", size: 189000, url: "/placeholder.svg", public_id: "demo/project-2" },
+      { name: "hero-bg.png", size: 512000, url: "/placeholder.svg", public_id: "demo/hero-bg" },
     ];
   }
   const res = await fetch(`${API_BASE_URL}/api/admin/media`, {
@@ -164,9 +165,9 @@ export async function fetchMediaFiles(): Promise<MediaFile[]> {
   return res.json();
 }
 
-export async function deleteMediaFile(filename: string): Promise<void> {
+export async function deleteMediaFile(public_id: string): Promise<void> {
   if (!API_BASE_URL) return;
-  await fetch(`${API_BASE_URL}/api/admin/media/${encodeURIComponent(filename)}`, {
+  await fetch(`${API_BASE_URL}/api/admin/media/${encodeURIComponent(public_id)}`, {
     method: "DELETE",
     headers: authHeaders(false),
   });
@@ -215,3 +216,4 @@ export async function fetchAdminSettings(): Promise<AdminSettings> {
   const res = await fetch(`${API_BASE_URL}/api/admin/settings`, { headers: authHeaders() });
   return res.json();
 }
+

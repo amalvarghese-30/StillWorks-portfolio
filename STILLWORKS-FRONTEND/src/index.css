@@ -4,6 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
+@media print {
+  /* Non-critical styles will be loaded after initial paint */
+}
+
 @layer base {
   :root {
     --background: 0 0% 98%;

@@ -76,10 +76,10 @@ const MediaManager = () => {
     uploads.filter((u) => u.status === "pending").forEach((u) => simulateUpload(u.id, u.file));
   };
 
-  const handleDelete = async (filename: string) => {
-    if (!confirm(`Delete "${filename}"?`)) return;
-    setDeleting(filename);
-    await deleteMediaFile(filename);
+  const handleDelete = async (public_id: string, name: string) => {
+    if (!confirm(`Delete "${name}"?`)) return;
+    setDeleting(public_id);
+    await deleteMediaFile(public_id);
     await loadMedia();
     setDeleting(null);
   };
@@ -190,24 +190,24 @@ const MediaManager = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {mediaFiles.map((file) => (
               <motion.div
-                key={file.name}
+                key={file.public_id || file.name}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="relative group aspect-square rounded-xl overflow-hidden bg-muted border border-border"
               >
                 <img
-                  src={getImageUrl(file.name)}
+                  src={file.url || getImageUrl(file.name)}
                   alt={file.name}
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <button
-                    onClick={() => handleDelete(file.name)}
-                    disabled={deleting === file.name}
+                    onClick={() => handleDelete(file.public_id, file.name)}
+                    disabled={deleting === file.public_id}
                     className="p-2 bg-destructive text-destructive-foreground rounded-full"
                   >
-                    {deleting === file.name ? (
+                    {deleting === file.public_id ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <Trash2 className="w-4 h-4" />
