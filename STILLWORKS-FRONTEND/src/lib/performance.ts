@@ -23,7 +23,7 @@ export function sendMetricsToAnalytics(metrics: Partial<PerformanceMetrics>): vo
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(metrics),
             keepalive: true,
-        }).catch(console.error);
+        }).catch(() => {}); // Non-critical — fail silently
     }
 }
 
