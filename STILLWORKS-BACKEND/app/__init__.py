@@ -1,4 +1,6 @@
 # STILLWORKS-BACKEND/app/__init__.py
+import sys
+
 from flask import Flask, send_from_directory, g, request, jsonify
 from flask_pymongo import PyMongo
 from flask_cors import CORS
@@ -9,7 +11,6 @@ import os
 import time
 import logging
 import platform
-import sys
 from flask_compress import Compress
 import cloudinary
 
@@ -99,6 +100,24 @@ def create_app():
     jwt.init_app(app)
     bcrypt.init_app(app)
     compress.init_app(app)
+
+    # Force MongoDB connection at startup so it doesn't fail silently later
+    try:
+        import pymongo
+        uri = app.config.get("MONGO_URI", "")
+        # Show the connection URI (password masked)
+        if not uri:
+            raise ValueError("MONGO_URI env var is empty or not set")
+        masked = uri.split("@")[-1] if "@" in uri else uri
+        logger.info("Connecting to MongoDB at %s ...", masked)
+        c = pymongo.MongoClient(uri, serverSelectionTimeoutMS=10000)
+        c.admin.command("ping")
+        c.close()
+        logger.info("MongoDB connection successful")
+    except Exception as e:
+        logger.critical("MongoDB connection FAILED: %s", e)
+        # Still fatal — exit so Render shows the error in dashboard
+        sys.exit(f"MongoDB connection failed: {e}")
 
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
@@ -197,37 +216,10 @@ def create_app():
         }, 200
 
     with app.app_context():
-        _check_mongo(app)
         _seed_admin()
         _create_indexes()
 
     return app
-
-
-def _check_mongo(app):
-    """Validate MongoDB connection at startup and log diagnostic info."""
-    uri = app.config.get("MONGO_URI", "")
-    if not uri:
-        logger.error("MONGO_URI is not set!")
-        return
-
-    # Mask password in log
-    masked = uri[:uri.index("//") + 2] if "//" in uri else ""
-    try:
-        at_pos = uri.index("@")
-        masked += "***:***@"
-        rest = uri[at_pos + 1:]
-    except ValueError:
-        rest = uri
-    logger.info("MONGO_URI: %s%s", masked, rest)
-
-    try:
-        import pymongo
-        client = pymongo.MongoClient(uri, serverSelectionTimeoutMS=5000)
-        client.admin.command("ping")
-        logger.info("MongoDB connection successful")
-    except Exception as e:
-        logger.error("MongoDB connection FAILED — %s: %s", type(e).__name__, e)
 
 
 def _seed_admin():
