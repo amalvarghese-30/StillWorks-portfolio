@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, current_app, request
+from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from app import mongo
 from app.utils.helpers import save_upload, allowed_file, get_cloudinary_public_id, delete_from_cloudinary
@@ -36,7 +36,7 @@ def upload_media():
     if not allowed_file(file.filename):
         return jsonify(error="File type not allowed"), 400
 
-    url = save_upload(file, current_app.config["UPLOAD_FOLDER"])
+    url = save_upload(file)
     if not url:
         return jsonify(error="Upload failed"), 500
 

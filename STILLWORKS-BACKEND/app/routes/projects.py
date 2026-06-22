@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from app import mongo
 from app.utils.helpers import slugify, serialize_doc, save_upload, allowed_file
@@ -176,10 +176,7 @@ def update_project(project_id):
     if "cover_image" in request.files:
         file = request.files["cover_image"]
         if file and allowed_file(file.filename):
-            update["cover_image"] = save_upload(
-                file,
-                current_app.config["UPLOAD_FOLDER"]
-            )
+            update["cover_image"] = save_upload(file)
 
     # Sections handling
     sections = existing_project.get("sections", [])
