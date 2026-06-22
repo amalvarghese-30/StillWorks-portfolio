@@ -14,6 +14,16 @@ function authHeaders(isJson = true): Record<string, string> {
   return h;
 }
 
+async function apiFetch(url: string, init?: RequestInit): Promise<Response> {
+  const res = await apiFetch(url, init);
+  if (res.status === 401) {
+    localStorage.removeItem("stillworks-admin-token");
+    window.location.href = "/admin/login";
+    throw new Error("Unauthorized");
+  }
+  return res;
+}
+
 // Stats
 export interface AdminStats {
   total_projects: number;
@@ -33,14 +43,14 @@ export async function fetchAdminStats(): Promise<AdminStats> {
   if (!API_BASE_URL) {
     return { total_projects: 8, featured_projects: 4, visible_projects: 6, total_categories: 6 };
   }
-  const res = await fetch(`${API_BASE_URL}/api/admin/stats`, { headers: authHeaders() });
+  const res = await apiFetch(`${API_BASE_URL}/api/admin/stats`, { headers: authHeaders() });
   return res.json();
 }
 
 // Projects
 export async function fetchAdminProjects(): Promise<Project[]> {
   if (!API_BASE_URL) return [...fallbackProjects];
-  const res = await fetch(`${API_BASE_URL}/api/admin/projects`, { headers: authHeaders() });
+  const res = await apiFetch(`${API_BASE_URL}/api/admin/projects`, { headers: authHeaders() });
   return res.json();
 }
 
@@ -60,7 +70,7 @@ export async function createProject(data: FormData): Promise<Project> {
     };
     return p;
   }
-  const res = await fetch(`${API_BASE_URL}/api/projects`, {
+  const res = await apiFetch(`${API_BASE_URL}/api/projects`, {
     method: "POST",
     headers: { Authorization: `Bearer ${getToken()}` },
     body: data,
@@ -70,7 +80,7 @@ export async function createProject(data: FormData): Promise<Project> {
 
 export async function updateProject(id: string, data: FormData): Promise<Project> {
   if (!API_BASE_URL) return fallbackProjects[0];
-  const res = await fetch(`${API_BASE_URL}/api/projects/${id}`, {
+  const res = await apiFetch(`${API_BASE_URL}/api/projects/${id}`, {
     method: "PUT",
     headers: { Authorization: `Bearer ${getToken()}` },
     body: data,
@@ -80,7 +90,7 @@ export async function updateProject(id: string, data: FormData): Promise<Project
 
 export async function deleteProject(id: string): Promise<void> {
   if (!API_BASE_URL) return;
-  await fetch(`${API_BASE_URL}/api/projects/${id}`, {
+  await apiFetch(`${API_BASE_URL}/api/projects/${id}`, {
     method: "DELETE",
     headers: authHeaders(),
   });
@@ -88,7 +98,7 @@ export async function deleteProject(id: string): Promise<void> {
 
 export async function toggleProjectFeatured(id: string): Promise<void> {
   if (!API_BASE_URL) return;
-  await fetch(`${API_BASE_URL}/api/projects/${id}/toggle-featured`, {
+  await apiFetch(`${API_BASE_URL}/api/projects/${id}/toggle-featured`, {
     method: "PATCH",
     headers: authHeaders(),
   });
@@ -96,7 +106,7 @@ export async function toggleProjectFeatured(id: string): Promise<void> {
 
 export async function toggleProjectVisibility(id: string): Promise<void> {
   if (!API_BASE_URL) return;
-  await fetch(`${API_BASE_URL}/api/projects/${id}/toggle-visibility`, {
+  await apiFetch(`${API_BASE_URL}/api/projects/${id}/toggle-visibility`, {
     method: "PATCH",
     headers: authHeaders(),
   });
@@ -114,7 +124,7 @@ export async function fetchAdminCategories(): Promise<Category[]> {
       { id: "6", name: "Performance Marketing", slug: "performance-marketing", order: 5 },
     ];
   }
-  const res = await fetch(`${API_BASE_URL}/api/categories`, { headers: authHeaders() });
+  const res = await apiFetch(`${API_BASE_URL}/api/categories`, { headers: authHeaders() });
   return res.json();
 }
 
@@ -122,7 +132,7 @@ export async function createCategory(name: string): Promise<Category> {
   if (!API_BASE_URL) {
     return { id: Date.now().toString(), name, slug: name.toLowerCase().replace(/\s+/g, "-"), order: 99 };
   }
-  const res = await fetch(`${API_BASE_URL}/api/categories`, {
+  const res = await apiFetch(`${API_BASE_URL}/api/categories`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({ name }),
@@ -134,7 +144,7 @@ export async function updateCategory(id: string, name: string): Promise<Category
   if (!API_BASE_URL) {
     return { id, name, slug: name.toLowerCase().replace(/\s+/g, "-"), order: 0 };
   }
-  const res = await fetch(`${API_BASE_URL}/api/categories/${id}`, {
+  const res = await apiFetch(`${API_BASE_URL}/api/categories/${id}`, {
     method: "PUT",
     headers: authHeaders(),
     body: JSON.stringify({ name }),
@@ -144,7 +154,7 @@ export async function updateCategory(id: string, name: string): Promise<Category
 
 export async function deleteCategory(id: string): Promise<void> {
   if (!API_BASE_URL) return;
-  await fetch(`${API_BASE_URL}/api/categories/${id}`, {
+  await apiFetch(`${API_BASE_URL}/api/categories/${id}`, {
     method: "DELETE",
     headers: authHeaders(),
   });
@@ -159,7 +169,7 @@ export async function fetchMediaFiles(): Promise<MediaFile[]> {
       { name: "hero-bg.png", size: 512000, url: "/placeholder.svg", public_id: "demo/hero-bg" },
     ];
   }
-  const res = await fetch(`${API_BASE_URL}/api/admin/media`, {
+  const res = await apiFetch(`${API_BASE_URL}/api/admin/media`, {
     headers: authHeaders(false)
   });
   return res.json();
@@ -167,7 +177,7 @@ export async function fetchMediaFiles(): Promise<MediaFile[]> {
 
 export async function deleteMediaFile(public_id: string): Promise<void> {
   if (!API_BASE_URL) return;
-  await fetch(`${API_BASE_URL}/api/admin/media/${encodeURIComponent(public_id)}`, {
+  await apiFetch(`${API_BASE_URL}/api/admin/media/${encodeURIComponent(public_id)}`, {
     method: "DELETE",
     headers: authHeaders(false),
   });
@@ -176,7 +186,7 @@ export async function deleteMediaFile(public_id: string): Promise<void> {
 // Reorder endpoints
 export async function reorderProjects(orders: { id: string; order: number }[]): Promise<void> {
   if (!API_BASE_URL) return;
-  await fetch(`${API_BASE_URL}/api/projects/reorder`, {
+  await apiFetch(`${API_BASE_URL}/api/projects/reorder`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify(orders),
@@ -185,7 +195,7 @@ export async function reorderProjects(orders: { id: string; order: number }[]): 
 
 export async function reorderCategories(orders: { id: string; order: number }[]): Promise<void> {
   if (!API_BASE_URL) return;
-  await fetch(`${API_BASE_URL}/api/categories/reorder`, {
+  await apiFetch(`${API_BASE_URL}/api/categories/reorder`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify(orders),
@@ -213,7 +223,7 @@ export async function fetchAdminSettings(): Promise<AdminSettings> {
       max_upload_size: "16MB"
     };
   }
-  const res = await fetch(`${API_BASE_URL}/api/admin/settings`, { headers: authHeaders() });
+  const res = await apiFetch(`${API_BASE_URL}/api/admin/settings`, { headers: authHeaders() });
   return res.json();
 }
 

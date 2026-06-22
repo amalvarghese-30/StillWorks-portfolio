@@ -146,6 +146,7 @@ def create_app():
     from app.routes.settings import settings_bp
     from app.routes.testimonials import testimonials_bp
     from app.routes.contact import contact_bp
+    from app.routes.analytics import analytics_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(projects_bp, url_prefix="/api/projects")
@@ -155,6 +156,7 @@ def create_app():
     app.register_blueprint(settings_bp, url_prefix="/api/admin/settings")
     app.register_blueprint(testimonials_bp, url_prefix="/api/testimonials")
     app.register_blueprint(contact_bp, url_prefix="/api/contact")
+    app.register_blueprint(analytics_bp, url_prefix="/api/analytics")
 
     # Global error handlers
     @app.errorhandler(400)
