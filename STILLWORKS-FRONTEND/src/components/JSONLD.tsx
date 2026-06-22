@@ -36,8 +36,6 @@ export const OrganizationSchema = () => (
             description: "We build automation-powered websites that increase conversions and reduce manual work.",
             address: {
                 "@type": "PostalAddress",
-                addressLocality: "Your City",
-                addressRegion: "Your State",
                 addressCountry: "IN",
             },
             contactPoint: {

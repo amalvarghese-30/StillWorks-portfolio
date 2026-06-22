@@ -4,7 +4,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { Quote, Star, User } from "lucide-react";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_BASE_URL || "https://stillworks-backend.onrender.com";
 
 interface Testimonial {
     id: string;
@@ -33,13 +33,8 @@ const Testimonials = () => {
     const fetchTestimonials = async () => {
         try {
             const url = `${API_URL}/api/testimonials`;
-            console.log("🔍 Fetching testimonials from:", url);
-
             const res = await fetch(url);
-            console.log("📡 Response status:", res.status);
-
             const data = await res.json();
-            console.log("✅ Testimonials received:", data);
 
             setTestimonials(data || []);
         } catch (err) {

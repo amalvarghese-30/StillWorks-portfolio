@@ -84,9 +84,9 @@ def delete_category(cat_id):
 @jwt_required()
 def reorder_categories():
     """Admin: reorder categories for drag-and-drop."""
-    data = request.get_json()
-    if not data:
-        return jsonify(error="Invalid request"), 400
+    data = request.get_json(silent=True)
+    if not data or not isinstance(data, list):
+        return jsonify(error="Expected array of order objects"), 400
     
     for item in data:
         if "id" not in item or "order" not in item:

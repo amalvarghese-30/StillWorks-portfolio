@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { lazy, Suspense } from "react";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Lazy load components for better initial load
 const Index = lazy(() => import("./pages/Index.tsx"));
@@ -39,15 +40,16 @@ const queryClient = new QueryClient({
 });
 
 const App = () => (
-  <HelmetProvider>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <AuthProvider>
-          <BrowserRouter>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
+  <ErrorBoundary>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <AuthProvider>
+            <BrowserRouter>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/project/:id" element={<ProjectDetail />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
@@ -74,6 +76,7 @@ const App = () => (
       </TooltipProvider>
     </QueryClientProvider>
   </HelmetProvider>
+  </ErrorBoundary>
 );
 
 export default App;

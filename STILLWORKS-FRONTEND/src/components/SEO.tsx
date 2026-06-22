@@ -13,8 +13,8 @@ interface SEOProps {
 
 const defaultTitle = "Stillworks — Automation Websites & Digital Systems Agency";
 const defaultDescription = "Stillworks builds automation-powered websites that increase conversions and reduce manual work. Web development, marketing automation, and custom digital systems.";
-const defaultImage = "https://stillworks.com/og-image.png";
-const defaultUrl = "https://stillworks.com";
+const defaultImage = "https://stillworks.in/og-image.png";
+const defaultUrl = "https://stillworks.in";
 
 export const SEO = ({
     title,

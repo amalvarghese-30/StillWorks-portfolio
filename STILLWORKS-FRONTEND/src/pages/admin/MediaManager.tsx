@@ -57,19 +57,29 @@ const MediaManager = () => {
 
   const simulateUpload = async (id: string, file: File) => {
     setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, status: "uploading" } : u)));
-    // Simulate upload delay
-    await new Promise((r) => setTimeout(r, 1500));
 
-    // In a real implementation, you'd upload to your backend here
-    // For now, just mark as done and refresh the list
-    setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, status: "done" } : u)));
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+      const token = localStorage.getItem("stillworks-admin-token") || "";
 
-    // Refresh media list after upload
-    setTimeout(() => {
+      if (API_BASE_URL) {
+        const res = await fetch(`${API_BASE_URL}/api/admin/media/upload`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        });
+        if (!res.ok) throw new Error("Upload failed");
+        await res.json();
+      }
+
+      setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, status: "done" } : u)));
       loadMedia();
-      // Remove from uploads after 2 seconds
       setTimeout(() => removeItem(id), 2000);
-    }, 500);
+    } catch {
+      setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, status: "error" } : u)));
+    }
   };
 
   const uploadAll = () => {

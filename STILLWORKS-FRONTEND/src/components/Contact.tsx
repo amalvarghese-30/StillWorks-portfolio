@@ -4,7 +4,7 @@ import { motion, useInView } from "framer-motion";
 import { ArrowUpRight, Send, Loader2, CheckCircle, Phone } from "lucide-react";
 import { toast } from "./ui/use-toast";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://stillworks-backend.onrender.com";
 
 const Contact = () => {
   const ref = useRef(null);
@@ -128,17 +128,14 @@ const Contact = () => {
                 <ArrowUpRight className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
               </a>
 
-              {/* EXISTING SOCIAL LINKS */}
+              {/* SOCIAL LINKS */}
               <div className="flex gap-8 pt-4">
-                {["Twitter", "LinkedIn", "Dribbble"].map((social) => (
-                  <a
-                    key={social}
-                    href="#"
-                    className="text-sm uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors duration-300 font-body"
-                  >
-                    {social}
-                  </a>
-                ))}
+                <a href="https://linkedin.com/company/stillworks" target="_blank" rel="noopener noreferrer" className="text-sm uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors duration-300 font-body">
+                  LinkedIn
+                </a>
+                <a href="https://instagram.com/stillworks.in" target="_blank" rel="noopener noreferrer" className="text-sm uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors duration-300 font-body">
+                  Instagram
+                </a>
               </div>
             </motion.div>
           </div>

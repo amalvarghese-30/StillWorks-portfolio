@@ -30,11 +30,11 @@ def login():
     
     access_token = create_access_token(
         identity=identity,
-        expires_delta=timedelta(hours=24)
+        expires_delta=timedelta(minutes=15)
     )
     refresh_token = create_refresh_token(
         identity=identity,
-        expires_delta=timedelta(days=30)
+        expires_delta=timedelta(days=7)
     )
 
     return jsonify(
@@ -49,7 +49,7 @@ def login():
 def refresh():
     identity = get_jwt_identity()
     access_token = create_access_token(
-        identity=identity, expires_delta=timedelta(hours=24)
+        identity=identity, expires_delta=timedelta(minutes=15)
     )
     return jsonify(access_token=access_token), 200
 
@@ -60,5 +60,5 @@ def me():
     identity = get_jwt_identity()
     admin = mongo.db.admins.find_one({"_id": ObjectId(identity)})
     if not admin:
-        return jsonify(error="Admin not found"), 404
+        return jsonify(error="Invalid token"), 401
     return jsonify(email=admin["email"], role=admin["role"]), 200

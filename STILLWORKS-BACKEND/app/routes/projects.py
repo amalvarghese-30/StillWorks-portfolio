@@ -53,6 +53,8 @@ def create_project():
     form = request.form
 
     title = form.get("title", "").strip()
+    if not title:
+        return jsonify(error="Title is required"), 400
     description = form.get("description", "").strip()
     client = form.get("client", "").strip()
     year = form.get("year", "").strip()
@@ -81,10 +83,7 @@ def create_project():
     if "cover_image" in request.files:
         file = request.files["cover_image"]
         if file and allowed_file(file.filename):
-            cover_image = save_upload(
-                file,
-                current_app.config["UPLOAD_FOLDER"]
-            )
+            cover_image = save_upload(file)
 
     # Parse sections if provided
     sections = []
@@ -116,7 +115,11 @@ def create_project():
         "video_url": video_url,
         "featured": form.get("featured", "false").lower() == "true",
         "visible": form.get("visible", "true").lower() == "true",
-        "order": int(form.get("order", 0)),
+        try:
+            order_val = int(form.get("order", 0))
+        except (ValueError, TypeError):
+            order_val = 0
+        "order": order_val,
         "created_at": datetime.now(timezone.utc),
         "updated_at": datetime.now(timezone.utc),
     }
@@ -158,7 +161,10 @@ def update_project(project_id):
 
     # Order field
     if "order" in form:
-        update["order"] = int(form["order"])
+        try:
+            update["order"] = int(form["order"])
+        except (ValueError, TypeError):
+            pass
 
     # Cover image (URL OR uploaded file)
     if "cover_image_url" in form and form["cover_image_url"].strip():
@@ -248,9 +254,9 @@ def toggle_visibility(project_id):
 @jwt_required()
 def reorder_projects():
     """Admin: reorder projects for drag-and-drop."""
-    data = request.get_json()
-    if not data:
-        return jsonify(error="Invalid request"), 400
+    data = request.get_json(silent=True)
+    if not data or not isinstance(data, list):
+        return jsonify(error="Expected array of order objects"), 400
     
     for item in data:
         if "id" not in item or "order" not in item:

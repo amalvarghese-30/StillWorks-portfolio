@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { HelmetProvider } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Marquee from "@/components/Marquee";
@@ -28,8 +27,7 @@ const Index = () => {
   }, []);
 
   return (
-    <HelmetProvider>
-      <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
         <SEO
           title="Home"
           description="Stillworks builds automation-powered websites that increase conversions and reduce manual work. Web development, marketing automation, and custom digital systems."
@@ -48,7 +46,6 @@ const Index = () => {
         <Contact />
         <Footer />
       </div>
-    </HelmetProvider>
   );
 };
 

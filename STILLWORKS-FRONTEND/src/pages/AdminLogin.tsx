@@ -102,9 +102,6 @@ const AdminLogin = () => {
           </button>
         </form>
 
-        <p className="text-center text-xs text-muted-foreground mt-8 font-body">
-          Demo: admin@stillworks.com / admin123
-        </p>
       </motion.div>
     </div>
   );

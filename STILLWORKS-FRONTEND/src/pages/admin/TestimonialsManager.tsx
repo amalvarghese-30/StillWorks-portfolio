@@ -33,7 +33,7 @@ interface MediaFile {
     url: string;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://stillworks-backend.onrender.com";
 
 function getAuthHeaders() {
     const token = localStorage.getItem("stillworks-admin-token");
@@ -879,7 +879,7 @@ const TestimonialsManager = () => {
                                                 initial={{ opacity: 0, scale: 0.9 }}
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 className="relative group aspect-square rounded-lg overflow-hidden bg-muted border border-border cursor-pointer hover:ring-2 hover:ring-foreground transition-all"
-                                                onClick={() => selectImage(file.name)}
+                                                onClick={() => selectImage(file.url)}
                                             >
                                                 <img src={getImageUrl(file.name)} alt={file.name} className="w-full h-full object-cover" loading="lazy" />
                                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

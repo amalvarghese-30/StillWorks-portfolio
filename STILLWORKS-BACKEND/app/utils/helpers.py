@@ -1,7 +1,7 @@
-import os
 import re
 import uuid
 from datetime import datetime
+from typing import Optional
 from werkzeug.utils import secure_filename
 import cloudinary
 import cloudinary.uploader
@@ -9,8 +9,10 @@ import cloudinary.api
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp", "svg"}
 
+
 def allowed_file(filename: str) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 def slugify(text: str) -> str:
     text = text.lower().strip()
@@ -18,7 +20,8 @@ def slugify(text: str) -> str:
     text = re.sub(r"[\s_]+", "-", text)
     return re.sub(r"-+", "-", text)
 
-def save_upload(file, upload_folder: str = None) -> str:
+
+def save_upload(file) -> str:
     """Upload file to Cloudinary and return the secure URL."""
     filename = secure_filename(file.filename)
     ext = filename.rsplit(".", 1)[1].lower() if "." in filename else "png"
@@ -36,6 +39,7 @@ def save_upload(file, upload_folder: str = None) -> str:
 
     return result.get("secure_url", result.get("url", ""))
 
+
 def get_cloudinary_public_id(url: str) -> str:
     """Extract Cloudinary public_id from a URL."""
     if not url or "cloudinary" not in url:
@@ -44,14 +48,13 @@ def get_cloudinary_public_id(url: str) -> str:
     if len(parts) < 2:
         return ""
     path_parts = parts[1].split("/")
-    # Remove version prefix if present (v1234567890)
     if path_parts[0].startswith("v"):
         path_parts = path_parts[1:]
-    # Remove file extension
     filename = path_parts[-1]
     name_without_ext = ".".join(filename.split(".")[:-1]) if "." in filename else filename
     path_parts[-1] = name_without_ext
     return "/".join(path_parts)
+
 
 def delete_from_cloudinary(public_id: str) -> bool:
     """Delete an image from Cloudinary by public_id. Returns True if successful."""
@@ -61,12 +64,16 @@ def delete_from_cloudinary(public_id: str) -> bool:
     except Exception:
         return False
 
-def serialize_doc(doc) -> dict:
-    """Convert MongoDB document to JSON-safe dict."""
+
+def serialize_doc(doc) -> Optional[dict]:
+    """Convert MongoDB document to JSON-safe dict. Returns None if doc is None."""
     if doc is None:
         return None
-    doc["id"] = str(doc.pop("_id"))
+    if not isinstance(doc, dict):
+        return doc
+    result = {k: v for k, v in doc.items() if k != "_id"}
+    result["id"] = str(doc["_id"])
     for key in ("created_at", "updated_at"):
-        if key in doc and isinstance(doc[key], datetime):
-            doc[key] = doc[key].isoformat()
-    return doc
+        if key in result and isinstance(result[key], datetime):
+            result[key] = result[key].isoformat()
+    return result

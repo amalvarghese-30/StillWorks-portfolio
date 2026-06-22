@@ -1,17 +1,7 @@
 // Service Worker for caching static assets
-const CACHE_NAME = 'stillworks-v1';
-const STATIC_ASSETS = [
-    '/',
-    '/logo.svg',
-    '/placeholder.svg'
-];
+const CACHE_NAME = 'stillworks-v2';
 
-self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(STATIC_ASSETS);
-        })
-    );
+self.addEventListener('install', () => {
     self.skipWaiting();
 });
 

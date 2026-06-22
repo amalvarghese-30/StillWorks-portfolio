@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { fetchProject, getImageUrl, resolveImageUrl } from "@/lib/api";
 import type { Project, Section } from "@/lib/projects";
 import { ArrowLeft, Star, Play, Quote, ChevronRight, CheckCircle, Users, TrendingUp, Zap, Code, Layout, Smartphone, Database, Cloud } from "lucide-react";
+import DOMPurify from "dompurify";
 import { HelmetProvider } from "react-helmet-async";
 import { SEO } from "@/components/SEO";
 import { JSONLD } from "@/components/JSONLD";
@@ -578,12 +579,12 @@ const TwoColumnSection = ({ data }: { data: Section["data"] }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {data.leftContent && (
             <div className="prose prose-lg dark:prose-invert max-w-none">
-              <div dangerouslySetInnerHTML={{ __html: data.leftContent }} />
+              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.leftContent) }} />
             </div>
           )}
           {data.rightContent && (
             <div className="prose prose-lg dark:prose-invert max-w-none">
-              <div dangerouslySetInnerHTML={{ __html: data.rightContent }} />
+              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.rightContent) }} />
             </div>
           )}
         </div>

@@ -23,13 +23,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     if (!API_BASE_URL) {
-      // Demo mode: accept demo/demo
-      if (email === "admin@stillworks.com" && password === "admin123") {
-        const demoToken = "demo-token-" + Date.now();
-        setToken(demoToken);
-        localStorage.setItem("stillworks-admin-token", demoToken);
-        return true;
-      }
       return false;
     }
     setLoading(true);

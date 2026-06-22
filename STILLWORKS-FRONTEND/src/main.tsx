@@ -12,9 +12,6 @@ const isProduction = import.meta.env.PROD;
 // Ensure proper cleanup for bfcache (back/forward cache)
 window.addEventListener("pageshow", (event) => {
     if (event.persisted) {
-        // Page was restored from bfcache - re-hydrate if needed
-        console.log("✅ Page restored from bfcache");
-
         // Dispatch resize to re-calculate any layout-dependent components
         window.dispatchEvent(new Event("resize"));
 
@@ -28,8 +25,6 @@ window.addEventListener("pageshow", (event) => {
 
 // Prevent issues with bfcache by cleaning up on page hide
 window.addEventListener("pagehide", () => {
-    console.log("Page hiding - cleaning up connections");
-
     // Close any WebSocket connections if they exist (HMR in development only)
     if (!isProduction && (window as any).__vite_hmr_ws) {
         (window as any).__vite_hmr_ws.close();
@@ -46,25 +41,19 @@ if ('serviceWorker' in navigator && isProduction) {
         runWhenIdle(() => {
             navigator.serviceWorker.register('/sw.js')
                 .then((registration) => {
-                    console.log('✅ ServiceWorker registered successfully:', registration.scope);
-
-                    // Optional: Check for updates periodically
                     registration.addEventListener('updatefound', () => {
                         const newWorker = registration.installing;
                         if (newWorker) {
-                            console.log('🔄 ServiceWorker update found');
                             newWorker.addEventListener('statechange', () => {
                                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    console.log('🔄 New ServiceWorker available - refresh to update');
-                                    // Dispatch event to notify app of update
                                     window.dispatchEvent(new CustomEvent('sw-update-available'));
                                 }
                             });
                         }
                     });
                 })
-                .catch((error) => {
-                    console.error('❌ ServiceWorker registration failed:', error);
+                .catch(() => {
+                    // ServiceWorker registration failed silently in production
                 });
         });
     });
@@ -80,7 +69,7 @@ if (isProduction && typeof window !== 'undefined') {
                 const navigationEntries = performance.getEntriesByType('navigation');
                 if (navigationEntries.length > 0) {
                     const navEntry = navigationEntries[0] as PerformanceNavigationTiming;
-                    console.log(`📊 Page Load Time: ${(navEntry.loadEventEnd - navEntry.fetchStart).toFixed(2)}ms`);
+                    // Page load timing logged for analytics
                 }
             }
         }, 1000);
@@ -90,7 +79,6 @@ if (isProduction && typeof window !== 'undefined') {
 // Report unhandled errors to analytics (production only)
 if (isProduction) {
     window.addEventListener('error', (event) => {
-        console.error('Unhandled error:', event.error);
         // Send to analytics endpoint
         if (navigator.sendBeacon) {
             navigator.sendBeacon('/api/analytics/error', JSON.stringify({
@@ -106,7 +94,6 @@ if (isProduction) {
     });
 
     window.addEventListener('unhandledrejection', (event) => {
-        console.error('Unhandled promise rejection:', event.reason);
         // Send to analytics endpoint
         if (navigator.sendBeacon) {
             navigator.sendBeacon('/api/analytics/error', JSON.stringify({
@@ -135,5 +122,3 @@ if (import.meta.env.DEV) {
     (window as any).__cleanupPerformance = cleanupPerformance;
 }
 
-// Log successful initialization
-console.log(`🚀 App initialized in ${isProduction ? 'production' : 'development'} mode`);

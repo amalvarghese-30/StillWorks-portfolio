@@ -163,7 +163,7 @@ const Portfolio = () => {
                 >
                   <div className="relative overflow-hidden rounded-lg aspect-[4/3] bg-muted mb-4">
                     <OptimizedImage
-                      src={getImageUrl(project.image, project.cover_image)}
+                      src={getImageUrl(project.cover_image)}
                       alt={project.title}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />

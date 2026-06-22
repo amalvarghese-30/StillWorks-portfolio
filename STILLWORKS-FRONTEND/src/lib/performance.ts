@@ -12,10 +12,7 @@ export interface PerformanceMetrics {
 // Send metrics to analytics or logging endpoint
 export function sendMetricsToAnalytics(metrics: Partial<PerformanceMetrics>): void {
     // Don't send in development
-    if (import.meta.env.DEV) {
-        console.log('[Performance Metrics]', metrics);
-        return;
-    }
+    if (import.meta.env.DEV) return;
 
     // Send to your analytics endpoint
     if (navigator.sendBeacon) {
@@ -44,7 +41,6 @@ export function monitorPerformance(): () => void {
                 for (const entry of entryList.getEntries()) {
                     if (entry.name === "first-contentful-paint") {
                         metrics.FCP = entry.startTime;
-                        console.log(`✅ FCP: ${metrics.FCP.toFixed(2)}ms`);
                     }
                 }
             });
@@ -62,7 +58,6 @@ export function monitorPerformance(): () => void {
                 const lastEntry = entries[entries.length - 1];
                 lcpValue = lastEntry.startTime;
                 metrics.LCP = lcpValue;
-                console.log(`✅ LCP: ${lcpValue.toFixed(2)}ms`);
             });
             lcpObserver.observe({ type: "largest-contentful-paint", buffered: true });
             observers.push(lcpObserver);
@@ -76,7 +71,6 @@ export function monitorPerformance(): () => void {
                 for (const entry of entryList.getEntries()) {
                     const fid = (entry as PerformanceEventTiming).processingStart - entry.startTime;
                     metrics.FID = fid;
-                    console.log(`✅ FID: ${fid.toFixed(2)}ms`);
                 }
             });
             fidObserver.observe({ type: "first-input", buffered: true });
@@ -95,7 +89,6 @@ export function monitorPerformance(): () => void {
                     }
                 }
                 metrics.CLS = clsValue;
-                console.log(`✅ CLS: ${clsValue.toFixed(4)}`);
             });
             clsObserver.observe({ type: "layout-shift", buffered: true });
             observers.push(clsObserver);
@@ -114,7 +107,6 @@ export function monitorPerformance(): () => void {
                     }
                 }
                 metrics.TBT = tbtValue;
-                console.log(`✅ TBT: ${tbtValue.toFixed(2)}ms`);
             });
             longTaskObserver.observe({ type: "longtask", buffered: true });
             observers.push(longTaskObserver);
@@ -130,7 +122,6 @@ export function monitorPerformance(): () => void {
             if (navEntry) {
                 const ttfb = navEntry.responseStart - navEntry.requestStart;
                 metrics.TTFB = ttfb;
-                console.log(`✅ TTFB: ${ttfb.toFixed(2)}ms`);
             }
         } catch (e) {
             console.warn("TTFB monitoring not supported", e);
