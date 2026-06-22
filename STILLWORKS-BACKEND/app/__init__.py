@@ -2,7 +2,6 @@
 import sys
 
 from flask import Flask, send_from_directory, g, request, jsonify
-from flask_pymongo import PyMongo
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
@@ -13,15 +12,44 @@ import logging
 import platform
 from flask_compress import Compress
 import cloudinary
+import pymongo
 
 load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-mongo = PyMongo()
 jwt = JWTManager()
 bcrypt = Bcrypt()
 compress = Compress()
+
+
+class Mongo:
+    """Singleton MongoDB client that actually connects."""
+    def __init__(self):
+        self.client = None
+        self.db = None
+
+    def init_app(self, app):
+        uri = app.config.get("MONGO_URI", "")
+        if not uri:
+            raise RuntimeError("MONGO_URI is not set")
+
+        masked = uri.split("@")[-1] if "@" in uri else "???"
+        logger.info("Connecting to MongoDB at %s ...", masked)
+
+        try:
+            self.client = pymongo.MongoClient(uri, serverSelectionTimeoutMS=10000)
+            self.client.admin.command("ping")  # force connection
+            db_name = pymongo.uri_parser.parse_uri(uri).get("database", "stillworks")
+            self.db = self.client[db_name]
+            logger.info("MongoDB connected — database: %s", db_name)
+        except Exception as e:
+            logger.critical("MongoDB connection FAILED: %s", e)
+            # Block startup so error is visible in Render dashboard
+            sys.exit(f"MongoDB connection failed: {e}")
+
+
+mongo = Mongo()
 
 
 def create_app():
@@ -100,24 +128,6 @@ def create_app():
     jwt.init_app(app)
     bcrypt.init_app(app)
     compress.init_app(app)
-
-    # Force MongoDB connection at startup so it doesn't fail silently later
-    try:
-        import pymongo
-        uri = app.config.get("MONGO_URI", "")
-        # Show the connection URI (password masked)
-        if not uri:
-            raise ValueError("MONGO_URI env var is empty or not set")
-        masked = uri.split("@")[-1] if "@" in uri else uri
-        logger.info("Connecting to MongoDB at %s ...", masked)
-        c = pymongo.MongoClient(uri, serverSelectionTimeoutMS=10000)
-        c.admin.command("ping")
-        c.close()
-        logger.info("MongoDB connection successful")
-    except Exception as e:
-        logger.critical("MongoDB connection FAILED: %s", e)
-        # Still fatal — exit so Render shows the error in dashboard
-        sys.exit(f"MongoDB connection failed: {e}")
 
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
