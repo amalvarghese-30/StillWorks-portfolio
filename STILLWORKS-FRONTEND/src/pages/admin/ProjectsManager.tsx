@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, Pencil, Trash2, Star, Eye, EyeOff, X, Loader2, FolderOpen,
@@ -18,6 +18,51 @@ import {
 import { getImageUrl } from "@/lib/api";
 import type { Project, Category, Section, SectionType, SectionData, categoryTemplates } from "@/lib/projects";
 import { categoryTemplates as templates } from "@/lib/projects";
+
+// ─── JSON textarea editors (local state → commit on blur) ───
+
+const JsonTextarea = memo(({ value, onChange, placeholder, rows }: {
+  value: unknown; onChange: (parsed: unknown) => void; placeholder: string; rows: number;
+}) => {
+  const serialized = JSON.stringify(value, null, 2);
+  const [text, setText] = useState(serialized);
+
+  useEffect(() => { setText(serialized); }, [serialized]);
+
+  return (
+    <textarea
+      value={text}
+      onChange={(e) => setText(e.target.value)}
+      onBlur={() => {
+        try { onChange(JSON.parse(text)); } catch { setText(serialized); }
+      }}
+      placeholder={placeholder}
+      rows={rows}
+      className="w-full bg-transparent border border-border rounded-lg px-4 py-2.5 text-sm text-foreground font-body focus:outline-none focus:border-foreground transition-colors font-mono"
+    />
+  );
+});
+JsonTextarea.displayName = "JsonTextarea";
+
+const StatsEditor = ({ value, onChange }: { value: unknown; onChange: (v: unknown) => void }) => (
+  <div>
+    <JsonTextarea value={value} onChange={onChange}
+      placeholder='[{"label": "Projects", "value": "50+"}, {"label": "Clients", "value": "30+"}]' rows={6} />
+    <p className="text-xs text-muted-foreground mt-1">Array of objects with label and value properties</p>
+  </div>
+);
+
+const TimelineEditor = ({ value, onChange }: { value: unknown; onChange: (v: unknown) => void }) => (
+  <JsonTextarea value={value} onChange={onChange}
+    placeholder='[{"year": "2024", "title": "Project Started", "description": "..."}]' rows={8} />
+);
+
+const TechStackEditor = ({ value, onChange }: { value: unknown; onChange: (v: unknown) => void }) => (
+  <JsonTextarea value={value} onChange={onChange}
+    placeholder='[{"name": "React"}, {"name": "TypeScript"}]' rows={6} />
+);
+
+// ───
 
 interface ProjectForm {
   title: string;
@@ -397,21 +442,10 @@ const ProjectsManager = () => {
         return (
           <div>
             <label className="block text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1.5 font-body">Stats (JSON format)</label>
-            <textarea
-              value={JSON.stringify(section.data.stats || [], null, 2)}
-              onChange={(e) => {
-                try {
-                  const stats = JSON.parse(e.target.value);
-                  updateSectionData(section.id, { stats });
-                } catch {
-                  // Invalid JSON, ignore
-                }
-              }}
-              placeholder='[{"label": "Projects", "value": "50+"}, {"label": "Clients", "value": "30+"}]'
-              rows={6}
-              className="w-full bg-transparent border border-border rounded-lg px-4 py-2.5 text-sm text-foreground font-body focus:outline-none focus:border-foreground transition-colors font-mono"
+            <StatsEditor
+              value={section.data.stats || []}
+              onChange={(stats) => updateSectionData(section.id, { stats })}
             />
-            <p className="text-xs text-muted-foreground mt-1">Array of objects with label and value properties</p>
           </div>
         );
 
@@ -419,19 +453,9 @@ const ProjectsManager = () => {
         return (
           <div>
             <label className="block text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1.5 font-body">Events (JSON format)</label>
-            <textarea
-              value={JSON.stringify(section.data.events || [], null, 2)}
-              onChange={(e) => {
-                try {
-                  const events = JSON.parse(e.target.value);
-                  updateSectionData(section.id, { events });
-                } catch {
-                  // Invalid JSON, ignore
-                }
-              }}
-              placeholder='[{"year": "2024", "title": "Project Started", "description": "..."}]'
-              rows={8}
-              className="w-full bg-transparent border border-border rounded-lg px-4 py-2.5 text-sm text-foreground font-body focus:outline-none focus:border-foreground transition-colors font-mono"
+            <TimelineEditor
+              value={section.data.events || []}
+              onChange={(events) => updateSectionData(section.id, { events })}
             />
           </div>
         );
@@ -541,19 +565,9 @@ const ProjectsManager = () => {
         return (
           <div>
             <label className="block text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1.5 font-body">Technologies (JSON format)</label>
-            <textarea
-              value={JSON.stringify(section.data.technologies || [], null, 2)}
-              onChange={(e) => {
-                try {
-                  const technologies = JSON.parse(e.target.value);
-                  updateSectionData(section.id, { technologies });
-                } catch {
-                  // Invalid JSON, ignore
-                }
-              }}
-              placeholder='[{"name": "React"}, {"name": "TypeScript"}]'
-              rows={6}
-              className="w-full bg-transparent border border-border rounded-lg px-4 py-2.5 text-sm text-foreground font-body focus:outline-none focus:border-foreground transition-colors font-mono"
+            <TechStackEditor
+              value={section.data.technologies || []}
+              onChange={(technologies) => updateSectionData(section.id, { technologies })}
             />
           </div>
         );
