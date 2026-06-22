@@ -170,6 +170,10 @@ def create_app():
 
 def _seed_admin():
     """Create default admin only if none exists."""
+    if mongo.db is None:
+        print("[WARNING] MongoDB not connected — skipping admin seed")
+        return
+
     admins = mongo.db.admins
 
     # Don't auto-seed in production if FORCE_SEED is false
@@ -197,6 +201,9 @@ def _seed_admin():
 
 def _create_indexes():
     """Create database indexes for better query performance."""
+    if mongo.db is None:
+        print("[WARNING] MongoDB not connected — skipping index creation")
+        return
     try:
         # Projects indexes
         mongo.db.projects.create_index("slug", unique=True)
