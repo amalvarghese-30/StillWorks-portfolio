@@ -41,9 +41,11 @@ class Mongo:
             self.client = pymongo.MongoClient(uri, serverSelectionTimeoutMS=10000)
             self.client.admin.command("ping")  # force connection
             # Extract database name from connection string
+            db_name = ""
             if "/" in uri:
-                db_name = uri.rsplit("/", 1)[-1].split("?")[0]
-            else:
+                db_part = uri.rsplit("/", 1)[-1]
+                db_name = db_part.split("?")[0].split("&")[0]
+            if not db_name:
                 db_name = "stillworks"
             self.db = self.client[db_name]
             logger.info("MongoDB connected — database: %s", db_name)
