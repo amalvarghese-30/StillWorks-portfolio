@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from app import mongo
-from app.utils.helpers import slugify, serialize_doc
+from app.utils.helpers import slugify, serialize_doc, mongo_required
 from datetime import datetime, timezone
 from bson import ObjectId
 
@@ -9,6 +9,7 @@ categories_bp = Blueprint("categories", __name__)
 
 
 @categories_bp.route("", methods=["GET"])
+@mongo_required
 def list_categories():
     """Public: list all categories sorted by order."""
     cats = mongo.db.categories.find().sort("order", 1)

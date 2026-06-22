@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from app import mongo
-from app.utils.helpers import slugify, serialize_doc, save_upload, allowed_file
+from app.utils.helpers import slugify, serialize_doc, save_upload, allowed_file, mongo_required
 from datetime import datetime, timezone
 from bson import ObjectId
 import json
@@ -19,6 +19,7 @@ def _safe_int(val, default=0):
 # ─── PUBLIC ───────────────────────────────────────────
 
 @projects_bp.route("", methods=["GET"])
+@mongo_required
 def list_projects():
     """Public: list visible projects with optional category filter."""
     query = {"visible": True}
@@ -36,6 +37,7 @@ def list_projects():
 
 
 @projects_bp.route("/<identifier>", methods=["GET"])
+@mongo_required
 def get_project(identifier):
     """Public: single project by ID or slug."""
     from bson import ObjectId

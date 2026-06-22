@@ -2,6 +2,8 @@ import re
 import uuid
 from datetime import datetime
 from typing import Optional
+from functools import wraps
+from flask import jsonify
 from werkzeug.utils import secure_filename
 import cloudinary
 import cloudinary.uploader
@@ -63,6 +65,17 @@ def delete_from_cloudinary(public_id: str) -> bool:
         return result.get("result") == "ok"
     except Exception:
         return False
+
+
+def mongo_required(f):
+    """Decorator: return 503 if MongoDB is not connected."""
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        from app import mongo
+        if mongo.db is None:
+            return jsonify(error="Database temporarily unavailable. Please try again shortly."), 503
+        return f(*args, **kwargs)
+    return wrapper
 
 
 def serialize_doc(doc) -> Optional[dict]:

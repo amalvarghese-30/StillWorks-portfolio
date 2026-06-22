@@ -197,10 +197,21 @@ def create_app():
         }, 200
 
     with app.app_context():
+        _check_mongo(app)
         _seed_admin()
         _create_indexes()
 
     return app
+
+
+def _check_mongo(app):
+    """Validate MongoDB connection at startup and log diagnostic info."""
+    try:
+        mongo.db.command("ping")
+        logger.info("MongoDB connection successful")
+    except Exception as e:
+        logger.error("MongoDB connection FAILED — %s: %s", type(e).__name__, e)
+        logger.error("MONGO_URI: %s", app.config.get("MONGO_URI", "NOT SET")[:20] + "..." if app.config.get("MONGO_URI") else "NOT SET")
 
 
 def _seed_admin():

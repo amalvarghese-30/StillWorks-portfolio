@@ -3,12 +3,13 @@ from flask_jwt_extended import jwt_required
 from datetime import datetime, timezone
 from bson import ObjectId
 from app import mongo
-from app.utils.helpers import serialize_doc
+from app.utils.helpers import serialize_doc, mongo_required
 
 testimonials_bp = Blueprint("testimonials", __name__)
 
 
 @testimonials_bp.route("", methods=["GET"])
+@mongo_required
 def list_testimonials():
     """Public: list only approved and visible testimonials."""
     testimonials = mongo.db.testimonials.find({
@@ -152,6 +153,7 @@ def toggle_visibility(testimonial_id):
 
 
 @testimonials_bp.route("/section-visibility", methods=["GET"])
+@mongo_required
 def get_section_visibility():
     settings = mongo.db.settings.find_one({"_id": "testimonials_section"})
     if not settings:
