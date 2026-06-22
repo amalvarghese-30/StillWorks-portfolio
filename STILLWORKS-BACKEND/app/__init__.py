@@ -206,12 +206,28 @@ def create_app():
 
 def _check_mongo(app):
     """Validate MongoDB connection at startup and log diagnostic info."""
+    uri = app.config.get("MONGO_URI", "")
+    if not uri:
+        logger.error("MONGO_URI is not set!")
+        return
+
+    # Mask password in log
+    masked = uri[:uri.index("//") + 2] if "//" in uri else ""
     try:
-        mongo.db.command("ping")
+        at_pos = uri.index("@")
+        masked += "***:***@"
+        rest = uri[at_pos + 1:]
+    except ValueError:
+        rest = uri
+    logger.info("MONGO_URI: %s%s", masked, rest)
+
+    try:
+        import pymongo
+        client = pymongo.MongoClient(uri, serverSelectionTimeoutMS=5000)
+        client.admin.command("ping")
         logger.info("MongoDB connection successful")
     except Exception as e:
         logger.error("MongoDB connection FAILED — %s: %s", type(e).__name__, e)
-        logger.error("MONGO_URI: %s", app.config.get("MONGO_URI", "NOT SET")[:20] + "..." if app.config.get("MONGO_URI") else "NOT SET")
 
 
 def _seed_admin():
