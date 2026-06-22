@@ -9,6 +9,13 @@ import json
 projects_bp = Blueprint("projects", __name__)
 
 
+def _safe_int(val, default=0):
+    try:
+        return int(val)
+    except (ValueError, TypeError):
+        return default
+
+
 # ─── PUBLIC ───────────────────────────────────────────
 
 @projects_bp.route("", methods=["GET"])
@@ -115,11 +122,7 @@ def create_project():
         "video_url": video_url,
         "featured": form.get("featured", "false").lower() == "true",
         "visible": form.get("visible", "true").lower() == "true",
-        try:
-            order_val = int(form.get("order", 0))
-        except (ValueError, TypeError):
-            order_val = 0
-        "order": order_val,
+        "order": _safe_int(form.get("order", 0)),
         "created_at": datetime.now(timezone.utc),
         "updated_at": datetime.now(timezone.utc),
     }
