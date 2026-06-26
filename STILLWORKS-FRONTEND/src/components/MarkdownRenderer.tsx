@@ -21,7 +21,8 @@ const codeStyle = {
 // We convert custom blocks to HTML so react-markdown can render them via custom components.
 
 function preprocessMarkdown(md: string): string {
-  let out = md;
+  // Normalize Windows CRLF → LF so regex anchors work reliably
+  let out = md.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 
   // Feature cards: :::feature Title\nContent\n:::
   out = out.replace(/^:::feature\s+(.+)\n([\s\S]*?)^:::/gm, (_: string, title: string, body: string) => {
@@ -72,8 +73,8 @@ function preprocessMarkdown(md: string): string {
 
   // YouTube embeds: bare YouTube URLs on their own line → embedded iframe
   out = out.replace(
-    /^(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11}))$/gm,
-    '<YouTubeEmbed url="$1" vid="$2" />'
+    /^https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})$/gm,
+    '<YouTubeEmbed url="$&" vid="$1" />'
   );
 
   return out;
