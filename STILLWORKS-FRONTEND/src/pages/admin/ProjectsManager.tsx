@@ -18,6 +18,7 @@ import {
 import { getImageUrl } from "@/lib/api";
 import type { Project, Category, Section, SectionType, SectionData, categoryTemplates } from "@/lib/projects";
 import { categoryTemplates as templates } from "@/lib/projects";
+import { ImageUpload, MultiImageUpload } from "@/components/admin/ImageUpload";
 
 // ─── JSON textarea editors (local state → commit on blur) ───
 
@@ -332,12 +333,10 @@ const ProjectsManager = () => {
           <div className="space-y-3">
             <div>
               <label className="block text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1.5 font-body">Image</label>
-              <input
-                type="text"
+              <ImageUpload
                 value={section.data.image || ""}
-                onChange={(e) => updateSectionData(section.id, { image: e.target.value })}
-                placeholder="Image URL or filename"
-                className="w-full bg-transparent border border-border rounded-lg px-4 py-2.5 text-sm text-foreground font-body focus:outline-none focus:border-foreground transition-colors"
+                onChange={(url) => updateSectionData(section.id, { image: url })}
+                placeholder="Upload hero image or paste URL"
               />
             </div>
             <div>
@@ -401,13 +400,10 @@ const ProjectsManager = () => {
               </select>
             </div>
             <div>
-              <label className="block text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1.5 font-body">Images (comma-separated URLs)</label>
-              <textarea
-                value={section.data.images?.join(", ") || ""}
-                onChange={(e) => updateSectionData(section.id, { images: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
-                placeholder="image1.jpg, image2.jpg, image3.jpg"
-                rows={3}
-                className="w-full bg-transparent border border-border rounded-lg px-4 py-2.5 text-sm text-foreground font-body focus:outline-none focus:border-foreground transition-colors resize-none"
+              <label className="block text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1.5 font-body">Images</label>
+              <MultiImageUpload
+                images={section.data.images || []}
+                onChange={(urls) => updateSectionData(section.id, { images: urls })}
               />
             </div>
           </div>
@@ -604,11 +600,10 @@ const ProjectsManager = () => {
             </div>
             <div>
               <label className="block text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1.5 font-body">Client Image</label>
-              <input
-                type="text"
+              <ImageUpload
                 value={section.data.clientImage || ""}
-                onChange={(e) => updateSectionData(section.id, { clientImage: e.target.value })}
-                className="w-full bg-transparent border border-border rounded-lg px-4 py-2.5 text-sm text-foreground font-body focus:outline-none focus:border-foreground transition-colors"
+                onChange={(url) => updateSectionData(section.id, { clientImage: url })}
+                placeholder="Upload client photo or paste URL"
               />
             </div>
           </div>
