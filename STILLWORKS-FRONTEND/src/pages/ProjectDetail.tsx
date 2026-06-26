@@ -5,6 +5,7 @@ import { fetchProject, getImageUrl, resolveImageUrl } from "@/lib/api";
 import type { Project, Section } from "@/lib/projects";
 import { ArrowLeft, Star, Play, Quote, ChevronRight, CheckCircle, Users, TrendingUp, Zap, Code, Layout, Smartphone, Database, Cloud, Cpu, Globe, Shield, Palette, Wrench, Layers, Server, Monitor, Braces, Type } from "lucide-react";
 import DOMPurify from "dompurify";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { HelmetProvider } from "react-helmet-async";
 import { SEO } from "@/components/SEO";
 import { JSONLD } from "@/components/JSONLD";
@@ -399,24 +400,13 @@ const ProjectDetail = () => {
 
 // Section components
 const TextSection = ({ data }: { data: Section["data"] }) => {
-  return (
-    <section className="py-16 md:py-24">
-      <div className="container mx-auto px-6 md:px-12 max-w-3xl">
-        {data.heading && (
-          <h2 className="text-3xl md:text-4xl font-display font-bold tracking-tight text-foreground mb-6">
-            {data.heading}
-          </h2>
-        )}
-        {data.body && (
-          <div className="prose prose-lg dark:prose-invert max-w-none">
-            <p className="text-muted-foreground font-body leading-relaxed whitespace-pre-wrap">
-              {data.body}
-            </p>
-          </div>
-        )}
-      </div>
-    </section>
-  );
+  if (!data.body && !data.heading) return null;
+
+  const markdownContent = data.heading
+    ? `# ${data.heading}\n\n${data.body || ""}`
+    : data.body || "";
+
+  return <MarkdownRenderer content={markdownContent} />;
 };
 
 const VideoSection = ({ data }: { data: Section["data"] }) => {
