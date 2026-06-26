@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { fetchProject, getImageUrl, resolveImageUrl } from "@/lib/api";
 import type { Project, Section } from "@/lib/projects";
-import { ArrowLeft, Star, Play, Quote, ChevronRight, CheckCircle, Users, TrendingUp, Zap, Code, Layout, Smartphone, Database, Cloud } from "lucide-react";
+import { ArrowLeft, Star, Play, Quote, ChevronRight, CheckCircle, Users, TrendingUp, Zap, Code, Layout, Smartphone, Database, Cloud, Cpu, Globe, Shield, Palette, Wrench, Layers, Server, Monitor, Braces, Type } from "lucide-react";
 import DOMPurify from "dompurify";
 import { HelmetProvider } from "react-helmet-async";
 import { SEO } from "@/components/SEO";
@@ -449,15 +449,46 @@ const VideoSection = ({ data }: { data: Section["data"] }) => {
 };
 
 const StatsSection = ({ data }: { data: Section["data"] }) => {
-  const stats = data.stats || [];
+  const raw = data.stats;
+  if (!raw) return null;
 
-  if (!stats.length) return null;
+  // Support both flat array: [{label, value}] and wrapped: {items: [{label, value, suffix}], title, subtitle}
+  let items: { label?: string; value?: string | number; suffix?: string }[] = [];
+  let title = "";
+  let subtitle = "";
+
+  if (Array.isArray(raw)) {
+    items = raw;
+  } else if (typeof raw === "object" && raw !== null) {
+    const obj = raw as Record<string, unknown>;
+    if (Array.isArray(obj.items)) {
+      items = obj.items as typeof items;
+    }
+    title = typeof obj.title === "string" ? obj.title : "";
+    subtitle = typeof obj.subtitle === "string" ? obj.subtitle : "";
+  }
+
+  if (!items.length) return null;
 
   return (
     <section className="py-16 md:py-24 bg-primary text-primary-foreground">
       <div className="container mx-auto px-6 md:px-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {stats.map((stat, i) => (
+        {(title || subtitle) && (
+          <div className="text-center mb-12">
+            {title && (
+              <h2 className="text-3xl md:text-4xl font-display font-bold tracking-tight mb-4">
+                {title}
+              </h2>
+            )}
+            {subtitle && (
+              <p className="text-lg text-primary-foreground/80 max-w-2xl mx-auto font-body">
+                {subtitle}
+              </p>
+            )}
+          </div>
+        )}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          {items.map((stat, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
@@ -465,7 +496,9 @@ const StatsSection = ({ data }: { data: Section["data"] }) => {
               transition={{ delay: i * 0.1 }}
               className="text-center"
             >
-              <p className="text-3xl md:text-4xl font-display font-bold">{stat.value}</p>
+              <p className="text-3xl md:text-4xl font-display font-bold">
+                {stat.value}{stat.suffix && <span className="text-2xl md:text-3xl">{stat.suffix}</span>}
+              </p>
               <p className="text-sm uppercase tracking-wide mt-2 opacity-90">{stat.label}</p>
             </motion.div>
           ))}
@@ -594,45 +627,305 @@ const TwoColumnSection = ({ data }: { data: Section["data"] }) => {
 };
 
 const TechStackSection = ({ data }: { data: Section["data"] }) => {
-  const technologies = data.technologies || [];
-  const techIcons: Record<string, React.ReactNode> = {
-    "React": <Layout className="w-6 h-6" />,
-    "Next.js": <Layout className="w-6 h-6" />,
-    "Node.js": <Database className="w-6 h-6" />,
-    "Python": <Code className="w-6 h-6" />,
-    "Flask": <Code className="w-6 h-6" />,
-    "MongoDB": <Database className="w-6 h-6" />,
-    "PostgreSQL": <Database className="w-6 h-6" />,
-    "AWS": <Cloud className="w-6 h-6" />,
-    "Vercel": <Zap className="w-6 h-6" />,
-    "Tailwind": <Smartphone className="w-6 h-6" />,
-    "TypeScript": <Code className="w-6 h-6" />,
+  const raw = data.technologies;
+  if (!raw) return null;
+
+  // Detect format: simple [{name}] array vs rich object with techStack/project/features/etc.
+  if (Array.isArray(raw)) {
+    const technologies = raw as { name?: string }[];
+    if (!technologies.length) return null;
+
+    const techIcons: Record<string, React.ReactNode> = {
+      "React": <Layout className="w-6 h-6" />,
+      "Next.js": <Layout className="w-6 h-6" />,
+      "Node.js": <Server className="w-6 h-6" />,
+      "Python": <Code className="w-6 h-6" />,
+      "Flask": <Code className="w-6 h-6" />,
+      "MongoDB": <Database className="w-6 h-6" />,
+      "PostgreSQL": <Database className="w-6 h-6" />,
+      "AWS": <Cloud className="w-6 h-6" />,
+      "Vercel": <Zap className="w-6 h-6" />,
+      "Tailwind": <Smartphone className="w-6 h-6" />,
+      "TypeScript": <Code className="w-6 h-6" />,
+    };
+
+    return (
+      <section className="py-16 md:py-24 bg-muted/30">
+        <div className="container mx-auto px-6 md:px-12 text-center">
+          <h2 className="text-3xl md:text-4xl font-display font-bold tracking-tight text-foreground mb-12">
+            {data.heading || "Tech Stack"}
+          </h2>
+          <div className="flex flex-wrap justify-center gap-8">
+            {technologies.map((tech, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.05 }}
+                className="flex flex-col items-center gap-2"
+              >
+                <div className="w-16 h-16 rounded-full bg-background border border-border flex items-center justify-center">
+                  {techIcons[tech.name || ""] || <Code className="w-6 h-6" />}
+                </div>
+                <span className="text-sm font-body text-muted-foreground">{tech.name}</span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Rich format — raw is a structured object
+  const rich = raw as Record<string, unknown>;
+
+  // Try to unwrap a single-element outer array
+  const unwrap = (v: unknown): Record<string, unknown> | null => {
+    if (Array.isArray(v) && v.length === 1 && typeof v[0] === "object" && v[0] !== null) {
+      return v[0] as Record<string, unknown>;
+    }
+    if (typeof v === "object" && v !== null && !Array.isArray(v)) {
+      return v as Record<string, unknown>;
+    }
+    return null;
   };
 
-  if (!technologies.length) return null;
+  const obj = unwrap(raw);
+  if (!obj) return null;
+
+  const project = obj.project as Record<string, unknown> | undefined;
+  const techStack = obj.techStack as Record<string, Record<string, string>> | undefined;
+  const architecture = obj.architecture as Record<string, unknown> | undefined;
+  const features = obj.features as Record<string, string[]> | undefined;
+  const apiEndpoints = obj.apiEndpoints as Record<string, string[]> | undefined;
+  const databaseModels = obj.databaseModels as string[] | undefined;
+  const designSystem = obj.designSystem as Record<string, unknown> | undefined;
+
+  const iconForCategory = (key: string): React.ReactNode => {
+    const map: Record<string, React.ReactNode> = {
+      frontend: <Monitor className="w-5 h-5" />,
+      backend: <Server className="w-5 h-5" />,
+      devOpsAndQuality: <Wrench className="w-5 h-5" />,
+      adminPanel: <Shield className="w-5 h-5" />,
+      customerFacing: <Users className="w-5 h-5" />,
+      technicalHighlights: <Zap className="w-5 h-5" />,
+    };
+    return map[key] || <Braces className="w-5 h-5" />;
+  };
 
   return (
-    <section className="py-16 md:py-24 bg-muted/30">
-      <div className="container mx-auto px-6 md:px-12 text-center">
-        <h2 className="text-3xl md:text-4xl font-display font-bold tracking-tight text-foreground mb-12">
-          {data.heading || "Tech Stack"}
-        </h2>
-        <div className="flex flex-wrap justify-center gap-8">
-          {technologies.map((tech, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.05 }}
-              className="flex flex-col items-center gap-2"
-            >
-              <div className="w-16 h-16 rounded-full bg-background border border-border flex items-center justify-center">
-                {techIcons[tech.name] || <Code className="w-6 h-6" />}
-              </div>
-              <span className="text-sm font-body text-muted-foreground">{tech.name}</span>
-            </motion.div>
-          ))}
-        </div>
+    <section className="py-16 md:py-24">
+      <div className="container mx-auto px-6 md:px-12 max-w-5xl space-y-20">
+        {/* Project overview */}
+        {project && (
+          <div className="text-center">
+            <p className="text-sm uppercase tracking-[0.2em] text-primary font-body mb-2">{project.type}</p>
+            <h2 className="text-3xl md:text-5xl font-display font-bold tracking-tight text-foreground mb-4">
+              {project.name}
+            </h2>
+            <p className="text-lg text-muted-foreground font-body max-w-2xl mx-auto">{project.tagline}</p>
+            {project.role && (
+              <p className="text-sm text-muted-foreground/70 font-body mt-2">{project.role}</p>
+            )}
+          </div>
+        )}
+
+        {/* Architecture stats */}
+        {architecture && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {Object.entries(architecture).map(([key, val]) => (
+              <motion.div
+                key={key}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                className="bg-card border border-border rounded-xl p-6 text-center"
+              >
+                <p className="text-3xl font-display font-bold text-primary">{String(val)}</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mt-1 font-body">
+                  {key.replace(/([A-Z])/g, " $1").trim()}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {/* Tech stack categories */}
+        {techStack && (
+          <div>
+            <h3 className="text-2xl font-display font-bold text-foreground mb-8 text-center">Technology Stack</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {Object.entries(techStack).map(([category, items]) => (
+                <motion.div
+                  key={category}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  className="bg-card border border-border rounded-xl p-6"
+                >
+                  <div className="flex items-center gap-2 mb-4">
+                    {iconForCategory(category)}
+                    <h4 className="font-display font-semibold text-foreground text-sm uppercase tracking-wide">
+                      {category.replace(/([A-Z])/g, " $1").trim()}
+                    </h4>
+                  </div>
+                  <div className="space-y-2">
+                    {Object.entries(items).map(([k, v]) => (
+                      <div key={k} className="flex justify-between items-baseline gap-2">
+                        <span className="text-sm text-muted-foreground font-body">{k}</span>
+                        <span className="text-sm text-foreground font-body font-medium text-right">{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Features */}
+        {features && (
+          <div>
+            <h3 className="text-2xl font-display font-bold text-foreground mb-8 text-center">Key Features</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {Object.entries(features).map(([category, list]) => (
+                <motion.div
+                  key={category}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  className="bg-card border border-border rounded-xl p-6"
+                >
+                  <div className="flex items-center gap-2 mb-4">
+                    {iconForCategory(category)}
+                    <h4 className="font-display font-semibold text-foreground text-sm uppercase tracking-wide">
+                      {category.replace(/([A-Z])/g, " $1").trim()}
+                    </h4>
+                  </div>
+                  <ul className="space-y-2">
+                    {list.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground font-body">
+                        <CheckCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* API endpoints */}
+        {apiEndpoints && (
+          <div>
+            <h3 className="text-2xl font-display font-bold text-foreground mb-8 text-center">API Endpoints</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Object.entries(apiEndpoints).map(([group, endpoints]) => (
+                <motion.div
+                  key={group}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  className="bg-card border border-border rounded-xl p-5"
+                >
+                  <h4 className="font-display font-semibold text-foreground text-sm uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-primary" />
+                    {group}
+                  </h4>
+                  <ul className="space-y-1.5">
+                    {endpoints.map((ep, i) => (
+                      <li key={i} className="text-xs text-muted-foreground font-body font-mono bg-muted/50 rounded px-2 py-1">
+                        {ep}
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Database models */}
+        {databaseModels && databaseModels.length > 0 && (
+          <div className="text-center">
+            <h3 className="text-2xl font-display font-bold text-foreground mb-6">Database Models</h3>
+            <div className="flex flex-wrap justify-center gap-3">
+              {databaseModels.map((model, i) => (
+                <span key={i} className="bg-card border border-border rounded-lg px-4 py-2 text-sm font-body text-foreground">
+                  <Database className="w-4 h-4 inline mr-1.5 text-primary" />
+                  {model}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Design system */}
+        {designSystem && (
+          <div>
+            <h3 className="text-2xl font-display font-bold text-foreground mb-8 text-center">Design System</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {designSystem.theme && (
+                <div className="bg-card border border-border rounded-xl p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Palette className="w-5 h-5 text-primary" />
+                    <h4 className="font-display font-semibold text-foreground text-sm uppercase tracking-wide">Theme</h4>
+                  </div>
+                  <p className="text-muted-foreground font-body text-sm">
+                    {String(designSystem.theme)} &middot; {String(designSystem.style || "")}
+                  </p>
+                </div>
+              )}
+              {designSystem.colorPalette && (
+                <div className="bg-card border border-border rounded-xl p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Layers className="w-5 h-5 text-primary" />
+                    <h4 className="font-display font-semibold text-foreground text-sm uppercase tracking-wide">Colors</h4>
+                  </div>
+                  <div className="space-y-1.5">
+                    {Object.entries(designSystem.colorPalette as Record<string, unknown>).map(([k, v]) => (
+                      <div key={k} className="flex justify-between text-sm">
+                        <span className="text-muted-foreground font-body capitalize">{k}</span>
+                        <span className="text-foreground font-body">
+                          {Array.isArray(v) ? (v as string[]).join(", ") : String(v)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {designSystem.typography && (
+                <div className="bg-card border border-border rounded-xl p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Type className="w-5 h-5 text-primary" />
+                    <h4 className="font-display font-semibold text-foreground text-sm uppercase tracking-wide">Typography</h4>
+                  </div>
+                  <div className="space-y-1.5">
+                    {Object.entries(designSystem.typography as Record<string, unknown>).map(([k, v]) => (
+                      <div key={k} className="flex justify-between text-sm">
+                        <span className="text-muted-foreground font-body capitalize">{k}</span>
+                        <span className="text-foreground font-body">{String(v)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {designSystem.effects && (
+                <div className="bg-card border border-border rounded-xl p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Zap className="w-5 h-5 text-primary" />
+                    <h4 className="font-display font-semibold text-foreground text-sm uppercase tracking-wide">Effects</h4>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {(designSystem.effects as string[]).map((e, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground font-body">
+                        <CheckCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                        {e}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
