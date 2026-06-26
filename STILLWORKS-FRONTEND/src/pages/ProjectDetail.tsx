@@ -499,17 +499,39 @@ const StatsSection = ({ data }: { data: Section["data"] }) => {
 };
 
 const TimelineSection = ({ data }: { data: Section["data"] }) => {
-  const events = data.events || [];
+  const raw = data.events;
+  if (!raw) return null;
+
+  // Support both flat array: [{year, title, description}] and wrapped: {items: [{title, description}], title, subtitle}
+  let events: { year?: string; title?: string; description?: string }[] = [];
+  let timelineTitle = "";
+  let timelineSubtitle = "";
+
+  if (Array.isArray(raw)) {
+    events = raw;
+  } else if (typeof raw === "object" && raw !== null) {
+    const obj = raw as Record<string, unknown>;
+    if (Array.isArray(obj.items)) {
+      events = obj.items as typeof events;
+    }
+    timelineTitle = typeof obj.title === "string" ? obj.title : "";
+    timelineSubtitle = typeof obj.subtitle === "string" ? obj.subtitle : "";
+  }
 
   if (!events.length) return null;
 
   return (
     <section className="py-16 md:py-24">
       <div className="container mx-auto px-6 md:px-12 max-w-3xl">
-        {data.heading && (
-          <h2 className="text-3xl md:text-4xl font-display font-bold tracking-tight text-foreground mb-12 text-center">
-            {data.heading}
-          </h2>
+        {(timelineTitle || data.heading) && (
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl md:text-4xl font-display font-bold tracking-tight text-foreground">
+              {timelineTitle || data.heading}
+            </h2>
+            {timelineSubtitle && (
+              <p className="text-muted-foreground font-body mt-3 text-lg">{timelineSubtitle}</p>
+            )}
+          </div>
         )}
         <div className="relative">
           <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-border" />
@@ -524,15 +546,19 @@ const TimelineSection = ({ data }: { data: Section["data"] }) => {
             >
               <div className="md:w-1/2 pl-12 md:pl-0">
                 <div className="bg-card border border-border rounded-xl p-6">
-                  <span className="text-sm font-display font-bold text-primary mb-2 block">
-                    {event.year}
-                  </span>
+                  {event.year && (
+                    <span className="text-sm font-display font-bold text-primary mb-2 block">
+                      {event.year}
+                    </span>
+                  )}
                   <h3 className="text-xl font-display font-semibold text-foreground mb-2">
                     {event.title}
                   </h3>
-                  <p className="text-muted-foreground font-body text-sm">
-                    {event.description}
-                  </p>
+                  {event.description && (
+                    <p className="text-muted-foreground font-body text-sm">
+                      {event.description}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="absolute left-0 md:left-1/2 top-6 w-8 h-8 rounded-full bg-primary border-4 border-background -translate-x-1/2" />

@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { motion, AnimatePresence } from "framer-motion";
@@ -29,6 +28,16 @@ function preprocessMarkdown(md: string): string {
     const cleanBody = body.trim();
     return `<FeatureCard title="${escapeAttr(cleanTitle)}">\n${cleanBody}\n</FeatureCard>`;
   });
+
+  // Feature cards: <FeatureCard title="Title">content</FeatureCard> (inline HTML)
+  out = out.replace(
+    /<FeatureCard\s+title="([^"]*)"\s*>([\s\S]*?)<\/FeatureCard>/g,
+    (_: string, title: string, body: string) => {
+      const cleanTitle = title.trim();
+      const cleanBody = body.trim();
+      return `<FeatureCard title="${escapeAttr(cleanTitle)}">\n${cleanBody}\n</FeatureCard>`;
+    }
+  );
 
   // GitHub-style callouts: > [!NOTE], > [!TIP], > [!WARNING], > [!IMPORTANT]
   // These are blockquotes where the first line is a callout marker
@@ -375,7 +384,7 @@ export default function MarkdownRenderer({ content, className = "" }: MarkdownRe
         ">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeSlug, [rehypeAutolinkHeadings, { behavior: "wrap", properties: { className: ["no-underline"] } }]]}
+            rehypePlugins={[rehypeSlug]}
             components={components as Components}
           >
             {processed}
