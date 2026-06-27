@@ -1,24 +1,24 @@
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import HeroBackground from "./HeroBackground";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 const Hero = ({ animationsReady = true }: { animationsReady?: boolean }) => {
   const [showAnimations, setShowAnimations] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const isInView = useInView(sectionRef, { margin: "-200px" });
 
   useEffect(() => {
     if (animationsReady) {
-      // Small delay to ensure component is mounted
       const timer = setTimeout(() => setShowAnimations(true), 50);
       return () => clearTimeout(timer);
     }
   }, [animationsReady]);
 
-  // Use fade-in instead of heavy animations if not ready
   const defaultAnimation = { opacity: 1, y: 0 };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-start overflow-hidden hero-gradient">
-      <HeroBackground />
+    <section ref={sectionRef} className="relative min-h-screen flex items-center justify-start overflow-hidden hero-gradient">
+      <HeroBackground isInView={isInView} />
       <div className="container mx-auto px-6 md:px-12 pt-24">
         <div className="max-w-5xl">
           {/* Overline */}
@@ -98,7 +98,7 @@ const Hero = ({ animationsReady = true }: { animationsReady?: boolean }) => {
               View our work
               <motion.span
                 className="inline-block"
-                animate={showAnimations ? { x: [0, 5, 0] } : { x: 0 }}
+                animate={showAnimations && isInView ? { x: [0, 5, 0] } : { x: 0 }}
                 transition={{ duration: 1.5, repeat: Infinity }}
               >
                 →
@@ -144,7 +144,7 @@ const Hero = ({ animationsReady = true }: { animationsReady?: boolean }) => {
       >
         <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Scroll</span>
         <motion.div
-          animate={showAnimations ? { y: [0, 8, 0] } : { y: 0 }}
+          animate={showAnimations && isInView ? { y: [0, 8, 0] } : { y: 0 }}
           transition={{ duration: 1.5, repeat: Infinity }}
           className="w-px h-8 bg-foreground/30"
         />
